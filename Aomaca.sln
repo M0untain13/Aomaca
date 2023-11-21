@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34031.279
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AomacaApp", "AomacaApp\AomacaApp.csproj", "{67CA7A7F-6D58-47D4-86DC-DD48134A3EF9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AomacaCore", "AomacaCore\AomacaCore.csproj", "{97C242D8-E353-42DE-A332-5316953F30A3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{67CA7A7F-6D58-47D4-86DC-DD48134A3EF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67CA7A7F-6D58-47D4-86DC-DD48134A3EF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67CA7A7F-6D58-47D4-86DC-DD48134A3EF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67CA7A7F-6D58-47D4-86DC-DD48134A3EF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97C242D8-E353-42DE-A332-5316953F30A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97C242D8-E353-42DE-A332-5316953F30A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97C242D8-E353-42DE-A332-5316953F30A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97C242D8-E353-42DE-A332-5316953F30A3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {21210639-2C74-40B6-BCD1-7D0C9FB882E6}
+	EndGlobalSection
+EndGlobal
