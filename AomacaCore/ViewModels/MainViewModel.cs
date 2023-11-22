@@ -20,7 +20,8 @@ public class MainViewModel : MvxViewModel
 		{
 			if (SetProperty(ref _pathToOriginal, value))
 			{
-				if(value != "")
+				ClearFields();
+                if (value != "")
 					_isStartAnalysis = true;
             }
 		}
@@ -93,19 +94,9 @@ public class MainViewModel : MvxViewModel
 
 	#endregion
 
-	#region Задачи анализа
-
-	private Task _exifAnalysisTask;
-
-	private Task _elaAnalysisTask;
-
-	private Task _finalAnalysisTask;
-
-	#endregion
-
 	#region Статус-бар
 
-	private string _statusText;
+	private string _statusText = string.Empty;
 	public string StatusText
 	{
 		get => _statusText;
@@ -118,9 +109,7 @@ public class MainViewModel : MvxViewModel
 		}
 	}
 
-	private ushort _timer = 0;
-
-	private Task _timerTask;
+	private ushort _timer;
 
     #endregion
 
@@ -128,56 +117,69 @@ public class MainViewModel : MvxViewModel
 
     public MainViewModel()
 	{
-		_exifAnalysisTask = new Task(() =>
-		{
-            Thread.Sleep(1000);
-            _Analysis();
-            ExifAnalysisResult = "N/A";
-			StatusText = "Анализ EXIF завершил свою работу.";
-        });
+        #region Таймер для отчистки статус-бара
 
-		_elaAnalysisTask = new Task(() =>
-		{
-			Thread.Sleep(3000);
-            ElaAnalysisResult = "N/A";
-            StatusText = "Анализ ELA завершил свою работу.";
-        });
-
-		_finalAnalysisTask = new Task(() =>
-		{
-			Thread.Sleep(1000);
-            FinalAnalysisResult = "N/A";
-            StatusText = "Анализ завершён.";
-        });
-
-        _timerTask = new Task(() =>
+        Task.Run(() =>
         {
             while (true)
             {
                 Thread.Sleep(1000);
                 if (_timer > 0)
                     _timer--;
-				if (_timer == 0)
-					StatusText = "";
+                if (_timer == 0)
+                    StatusText = "";
             }
         });
+
+        #endregion
+
+        #region Инициализация команд
 
         AnalysisAsynCommand = new MvxAsyncCommand(() =>
         {
             return Task.Run(() =>
             {
+                #region Фоновые задачи
+
+                var exifAnalysisTask = new Task(() =>
+                {
+                    Thread.Sleep(1000);
+                    _Analysis();
+                    ExifAnalysisResult = "N/A";
+                    StatusText = "Анализ EXIF завершил свою работу.";
+                });
+
+                var elaAnalysisTask = new Task(() =>
+                {
+                    Thread.Sleep(3000);
+                    ElaAnalysisResult = "N/A";
+                    StatusText = "Анализ ELA завершил свою работу.";
+                });
+
+                var finalAnalysisTask = new Task(() =>
+                {
+                    exifAnalysisTask.Wait();
+                    elaAnalysisTask.Wait();
+                    Thread.Sleep(1000);
+                    FinalAnalysisResult = "N/A";
+                    StatusText = "Анализ завершён.";
+                });
+
+                #endregion
+
+
                 while (!_isStartAnalysis) { }
 
-                _exifAnalysisTask.Start();
-                _elaAnalysisTask.Start();
-                _exifAnalysisTask.Wait();
-                _elaAnalysisTask.Wait();
+                exifAnalysisTask.Start();
+                elaAnalysisTask.Start();
+                finalAnalysisTask.Start();
 
-                _finalAnalysisTask.Start();
-                _finalAnalysisTask.Wait();
+                finalAnalysisTask.Wait();
                 _isStartAnalysis = false;
             });
         });
+
+        #endregion
     }
 
 	private void _Analysis()
@@ -203,7 +205,7 @@ public class MainViewModel : MvxViewModel
 		}
 	}
 
-	private void ClearAllFields()
+	private void ClearFields()
 	{
 		PathToEla = "";
 		DateCreate = "";
