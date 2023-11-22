@@ -56,8 +56,8 @@
 					<GroupBox.Header>
 						<TextBlock Text="Артефакты сжатия"/>
 					</GroupBox.Header>
-					<TextBlock Text="Контент"/>
-				</GroupBox>
+                    <Image Source="{Binding Path=PathToEla}"/>
+                </GroupBox>
 			</Grid>
             <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
 			<Grid Grid.Column="2">

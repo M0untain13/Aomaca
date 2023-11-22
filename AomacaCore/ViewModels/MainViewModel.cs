@@ -83,6 +83,8 @@ public class MainViewModel : MvxViewModel
 		private set => SetProperty(ref _elaAnalysisResult, value);
 	}
 
+	private decimal _fakeChance = 0.00M;
+
 	private string _finalAnalysisResult = string.Empty;
 	public string FinalAnalysisResult
 	{
@@ -115,7 +117,7 @@ public class MainViewModel : MvxViewModel
 
 	public IMvxAsyncCommand AnalysisAsynCommand { get; }
 
-    public MainViewModel()
+    public MainViewModel(IAnalyzerService analyzerService)
 	{
         #region Таймер для отчистки статус-бара
 
@@ -144,15 +146,22 @@ public class MainViewModel : MvxViewModel
                 var exifAnalysisTask = new Task(() =>
                 {
                     Thread.Sleep(1000);
-                    _Analysis();
-                    ExifAnalysisResult = "N/A";
+					var result = analyzerService.ExifMethod(PathToOriginal);
+					DateCreate = result.Item1;
+					DateEdit = result.Item2;
+					Device = result.Item3;
+
+                    ExifAnalysisResult = result.Item4;
                     StatusText = "Анализ EXIF завершил свою работу.";
                 });
 
                 var elaAnalysisTask = new Task(() =>
                 {
-                    Thread.Sleep(3000);
-                    ElaAnalysisResult = "N/A";
+                    Thread.Sleep(500);
+					PathToEla = analyzerService.ElaMethod(PathToOriginal);
+                    _fakeChance = analyzerService.NeuralNetworkMethod(PathToEla);
+
+                    ElaAnalysisResult = $"Нейросеть считает, что это изображение могло быть подделано с шансом {_fakeChance}%.";
                     StatusText = "Анализ ELA завершил свою работу.";
                 });
 
@@ -161,12 +170,22 @@ public class MainViewModel : MvxViewModel
                     exifAnalysisTask.Wait();
                     elaAnalysisTask.Wait();
                     Thread.Sleep(1000);
-                    FinalAnalysisResult = "N/A";
+
+					// TODO: сделать нормальную реализацию
+
+					if(_fakeChance > 70)
+					{
+                        FinalAnalysisResult = "Вывод: Изображение было подделано.";
+                    }
+					else
+					{
+                        FinalAnalysisResult = "N/A";
+                    }
+
                     StatusText = "Анализ завершён.";
                 });
 
                 #endregion
-
 
                 while (!_isStartAnalysis) { }
 
@@ -181,29 +200,6 @@ public class MainViewModel : MvxViewModel
 
         #endregion
     }
-
-	private void _Analysis()
-	{
-		// TODO: теги неправильно читаются
-		var directories = ImageMetadataReader.ReadMetadata(PathToOriginal);
-		{
-			var subIfdDirectory = directories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
-			{
-				var dateTimeOriginal = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagDateTimeOriginal);
-				{
-					DateCreate = $"Дата создания: {dateTimeOriginal ?? "Отсутствует"}";
-				}
-				var dateTimeDigitized = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagDateTimeDigitized);
-				{
-					DateEdit = $"Дата изменения {dateTimeDigitized ?? "Отсутствует"}";
-				}
-				var device = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagDeviceSettingDescription);
-				{
-					Device = $"Устройство: {device ?? "Отсутствует"}";
-				}
-			}
-		}
-	}
 
 	private void ClearFields()
 	{
