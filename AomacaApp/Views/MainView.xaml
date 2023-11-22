@@ -23,12 +23,12 @@
     
 	<DockPanel>
 		<StatusBar DockPanel.Dock="Top">
-            <Button Content="Открыть..." Click="OpenFileButtonClick"/>
+            <Button Content="Открыть..." Click="OpenFileButtonClick" Command="{Binding Path=AnalysisAsynCommand}"/>
             <Button Content="Помощь" Click="HelpButtonClick"/>
         </StatusBar>
 		<StatusBar DockPanel.Dock="Bottom">
 			<StatusBarItem>
-				<TextBlock Text="Нормалёк"/>
+				<TextBlock Text="{Binding Path=StatusText}"/>
 			</StatusBarItem>
 		</StatusBar>
 		<Grid>
@@ -84,7 +84,11 @@
 					<GroupBox.Header>
 						<TextBlock Text="Анализ"/>
 					</GroupBox.Header>
-                    <TextBlock Text="Контент"/>
+                    <StackPanel>
+                        <TextBlock Text="{Binding Path=ExifAnalysisResult}"/>
+                        <TextBlock Text="{Binding Path=ElaAnalysisResult}"/>
+                        <TextBlock Text="{Binding Path=FinalAnalysisResult}"/>
+                    </StackPanel>
 				</GroupBox>
 			</Grid>
 

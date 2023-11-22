@@ -1,18 +1,13 @@
 ﻿using AomacaCore.Services;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
+using MvvmCross.Commands;
 using MvvmCross.ViewModels;
 
 namespace AomacaCore.ViewModels;
 
 public class MainViewModel : MvxViewModel
 {
-	#region Сервисы
-
-	private INeuralNetworkService _neuralNetworkService;
-
-	#endregion
-
 	#region Данные
 
 	#region Путь до исходного изображения
@@ -25,10 +20,13 @@ public class MainViewModel : MvxViewModel
 		{
 			if (SetProperty(ref _pathToOriginal, value))
 			{
-				Task.Run(_Analysis);
-			}
+				if(value != "")
+					_isStartAnalysis = true;
+            }
 		}
 	}
+
+	private bool _isStartAnalysis;
 
 	#endregion
 
@@ -70,21 +68,117 @@ public class MainViewModel : MvxViewModel
 
 	#region Анализ
 
-	private string _analisys = string.Empty;
-	public string Analysis
+	private string _exifAnalysisResult = string.Empty;
+	public string ExifAnalysisResult
 	{
-		get => _analisys;
-		private set => SetProperty(ref _analisys, value);
+		get => _exifAnalysisResult;
+		private set => SetProperty(ref _exifAnalysisResult, value);
+	}
+
+	private string _elaAnalysisResult = string.Empty;
+	public string ElaAnalysisResult
+	{
+		get => _elaAnalysisResult;
+		private set => SetProperty(ref _elaAnalysisResult, value);
+	}
+
+	private string _finalAnalysisResult = string.Empty;
+	public string FinalAnalysisResult
+	{
+		get => _finalAnalysisResult;
+		private set => SetProperty(ref _finalAnalysisResult, value);
 	}
 
 	#endregion
 
 	#endregion
 
-	public MainViewModel(INeuralNetworkService nnService)
+	#region Задачи анализа
+
+	private Task _exifAnalysisTask;
+
+	private Task _elaAnalysisTask;
+
+	private Task _finalAnalysisTask;
+
+	#endregion
+
+	#region Статус-бар
+
+	private string _statusText;
+	public string StatusText
 	{
-		_neuralNetworkService = nnService;
+		get => _statusText;
+		set
+		{
+			if (SetProperty(ref _statusText, value) && value != "")
+			{
+				_timer = 4;
+			}
+		}
 	}
+
+	private ushort _timer = 0;
+
+	private Task _timerTask;
+
+    #endregion
+
+	public IMvxAsyncCommand AnalysisAsynCommand { get; }
+
+    public MainViewModel()
+	{
+		_exifAnalysisTask = new Task(() =>
+		{
+            Thread.Sleep(1000);
+            _Analysis();
+            ExifAnalysisResult = "N/A";
+			StatusText = "Анализ EXIF завершил свою работу.";
+        });
+
+		_elaAnalysisTask = new Task(() =>
+		{
+			Thread.Sleep(3000);
+            ElaAnalysisResult = "N/A";
+            StatusText = "Анализ ELA завершил свою работу.";
+        });
+
+		_finalAnalysisTask = new Task(() =>
+		{
+			Thread.Sleep(1000);
+            FinalAnalysisResult = "N/A";
+            StatusText = "Анализ завершён.";
+        });
+
+        _timerTask = new Task(() =>
+        {
+            while (true)
+            {
+                Thread.Sleep(1000);
+                if (_timer > 0)
+                    _timer--;
+				if (_timer == 0)
+					StatusText = "";
+            }
+        });
+
+        AnalysisAsynCommand = new MvxAsyncCommand(() =>
+        {
+            return Task.Run(() =>
+            {
+                while (!_isStartAnalysis) { }
+
+                _exifAnalysisTask.Start();
+                _elaAnalysisTask.Start();
+                _exifAnalysisTask.Wait();
+                _elaAnalysisTask.Wait();
+
+                _finalAnalysisTask.Start();
+                _finalAnalysisTask.Wait();
+                _isStartAnalysis = false;
+            });
+        });
+    }
 
 	private void _Analysis()
 	{
@@ -107,5 +201,16 @@ public class MainViewModel : MvxViewModel
 				}
 			}
 		}
+	}
+
+	private void ClearAllFields()
+	{
+		PathToEla = "";
+		DateCreate = "";
+		DateEdit = "";
+		Device = "";
+		ExifAnalysisResult = "";
+		ElaAnalysisResult = "";
+		FinalAnalysisResult = "";
 	}
 }
