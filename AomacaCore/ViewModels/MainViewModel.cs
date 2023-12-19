@@ -10,6 +10,9 @@ namespace AomacaCore.ViewModels;
 //TODO: При сборке необходимо, чтобы как-то PyScripts попадал в папку сборки, иначе анализ работать не будет
 
 //TODO: не забудь потом добавить ссылку, откуда взял ELA скрипт
+
+//TODO: нужно будет добавить функцию сохранения результатов
+
 public class MainViewModel : MvxViewModel
 {
 	#region Данные
