@@ -1,53 +1,55 @@
-﻿using MetadataExtractor.Formats.Exif;
-using MetadataExtractor;
-using System.Xml.XPath;
+﻿using System.Diagnostics;
 
 namespace AomacaCore.Services;
 
 public class AnalyzerService : IAnalyzerService
 {
-    public (string, string, string, string) ExifMethod(string path)
-    {
-        string 
-            dataCreate = "",
-            dateEdit = "",
-            device = "",
-            result = "";
+	public string ExifMethod(string path)
+	{
+        // Путь до скрипта
+        const string pathToScript = @$"{baseDir}\exif.py";
 
-        var directories = ImageMetadataReader.ReadMetadata(path);
-        {
-            var subIfdDirectory = directories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
-            {
-                var dto = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagDateTimeOriginal);
-                {
-                    dataCreate = $"Дата создания: {dto ?? "Отсутствует"}";
-                }
-                var dtd = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagDateTimeDigitized);
-                {
-                    dateEdit = $"Дата изменения {dtd ?? "Отсутствует"}";
-                }
-                var d = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagDeviceSettingDescription);
-                {
-                    device = $"Устройство: {d ?? "Отсутствует"}";
-                }
-            }
-        }
+        RunCmd(pathToScript, pathToPython, $"{path}");
 
-        // TODO: убрать заглушку и сделать номарльную реализацию
-        result = "В метаданных обнаружено...";
+        return @$"{filesDir}\exif_result.txt";
+	}
 
-        return (dataCreate, dateEdit, device, result);
-    }
+	public (string, string) ElaMethod(string path)
+	{
+		// Путь до скрипта
+		const string pathToScript = @$"{baseDir}\ela.py";
+		// Качество выходного изображения
+		const int quality = 25;
 
-    public string ElaMethod(string path)
-    {
-        // TODO: убрать заглушку и реализовать метод
-        return path;
-    }
+		RunCmd(pathToScript, pathToPython, $"{path} {quality}");
 
-    public decimal NeuralNetworkMethod(string path)
-    {
-        // TODO: убрать заглушку и реализовать метод
-        return 95.23M;
-    }
+		return (@$"{filesDir}\resaved_image.jpg", @$"{filesDir}\ela_image.png");
+	}
+
+	public decimal NeuralNetworkMethod(string path)
+	{
+		// TODO: убрать заглушку и реализовать метод
+		return 95.23M;
+	}
+
+    // Директория, где лежат скрипты и вирт.пространство
+    private const string baseDir = "PyScripts";
+    // Директория, куда будут сохранятся файлы
+    private const string filesDir = "Files";
+    // Путь до python.exe
+    private const string pathToPython = @$"{baseDir}\.venv\Scripts\python.exe";
+
+    private void RunCmd(string pathToScr, string pathToPy, string args)
+	{
+		var start = new ProcessStartInfo
+		{
+			FileName = pathToPy,
+			Arguments = $"{pathToScr} {args}",
+			UseShellExecute = false,
+			RedirectStandardOutput = true,
+            CreateNoWindow = true
+        };
+		using var process = Process.Start(start);
+		process?.WaitForExit();
+	}
 }

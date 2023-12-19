@@ -1,10 +1,13 @@
 ﻿using AomacaCore.Services;
-using MetadataExtractor;
-using MetadataExtractor.Formats.Exif;
 using MvvmCross.Commands;
 using MvvmCross.ViewModels;
 
 namespace AomacaCore.ViewModels;
+
+//TODO: Кстати, ты потом прошерсти весь код на шарпе и питоне, чтобы все по красоте было.
+//		(форматирование и проверка на возникновение ошибок)
+
+//TODO: При сборке необходимо, чтобы как-то PyScripts попадал в папку сборки, иначе анализ работать не будет
 
 public class MainViewModel : MvxViewModel
 {
@@ -29,11 +32,22 @@ public class MainViewModel : MvxViewModel
 
 	private bool _isStartAnalysis;
 
-	#endregion
+    #endregion
 
-	#region Путь до ELA изображения
+    #region Путь до сохраннёного оригинала
 
-	private string _pathToEla = string.Empty;
+    private string _pathToResavedOrig = string.Empty;
+    public string PathToResavedOrig
+    {
+        get => _pathToResavedOrig;
+        set => SetProperty(ref _pathToResavedOrig, value);
+    }
+
+    #endregion
+
+    #region Путь до ELA изображения
+
+    private string _pathToEla = string.Empty;
 	public string PathToEla
 	{
 		get => _pathToEla;
@@ -115,7 +129,7 @@ public class MainViewModel : MvxViewModel
 
     #endregion
 
-	public IMvxAsyncCommand AnalysisAsynCommand { get; }
+	public IMvxAsyncCommand AnalysisAsyncCommand { get; }
 
     public MainViewModel(IAnalyzerService analyzerService)
 	{
@@ -137,7 +151,7 @@ public class MainViewModel : MvxViewModel
 
         #region Инициализация команд
 
-        AnalysisAsynCommand = new MvxAsyncCommand(() =>
+        AnalysisAsyncCommand = new MvxAsyncCommand(() =>
         {
             return Task.Run(() =>
             {
@@ -146,19 +160,33 @@ public class MainViewModel : MvxViewModel
                 var exifAnalysisTask = new Task(() =>
                 {
                     Thread.Sleep(1000);
-					var result = analyzerService.ExifMethod(PathToOriginal);
-					DateCreate = result.Item1;
-					DateEdit = result.Item2;
-					Device = result.Item3;
+					var path = analyzerService.ExifMethod(PathToOriginal);
 
-                    ExifAnalysisResult = result.Item4;
+                    //TODO: Пока что будем верить, что файл нормальный и не имеет ошибок.
+                    
+                    var sr = new StreamReader(path);
+                    var line = sr.ReadLine();
+					var metadata = new Dictionary<string, string>();
+                    while (line != null)
+                    {
+                        var pair = line.Split("||");
+						metadata[pair[0]] = pair[1];
+                        line = sr.ReadLine();
+                    }
+					sr.Close();
+                    ExifAnalysisResult = string.Join('\n', metadata.Values);
                     StatusText = "Анализ EXIF завершил свою работу.";
                 });
 
                 var elaAnalysisTask = new Task(() =>
                 {
                     Thread.Sleep(500);
-					PathToEla = analyzerService.ElaMethod(PathToOriginal);
+					var currentDir = System.IO.Directory.GetCurrentDirectory();
+
+                    var (nameResavedOrig, nameEla) = analyzerService.ElaMethod(PathToOriginal);
+					PathToResavedOrig = $@"{currentDir}\{nameResavedOrig}";
+					PathToEla = $@"{currentDir}\{nameEla}";
+
                     _fakeChance = analyzerService.NeuralNetworkMethod(PathToEla);
 
                     ElaAnalysisResult = $"Нейросеть считает, что это изображение могло быть подделано с шансом {_fakeChance}%.";
@@ -187,6 +215,7 @@ public class MainViewModel : MvxViewModel
 
                 #endregion
 
+				// TODO: может ли быть такая ситуация, что анализ никогда не начнется?
                 while (!_isStartAnalysis) { }
 
                 exifAnalysisTask.Start();
@@ -201,14 +230,6 @@ public class MainViewModel : MvxViewModel
         #endregion
     }
 
-	private void ClearFields()
-	{
-		PathToEla = "";
-		DateCreate = "";
-		DateEdit = "";
-		Device = "";
-		ExifAnalysisResult = "";
-		ElaAnalysisResult = "";
-		FinalAnalysisResult = "";
-	}
+	private void ClearFields() => 
+		PathToResavedOrig = PathToEla = DateCreate = DateEdit = Device = ExifAnalysisResult = ElaAnalysisResult = FinalAnalysisResult = string.Empty;
 }

@@ -23,7 +23,7 @@
     
 	<DockPanel>
 		<StatusBar DockPanel.Dock="Top">
-            <Button Content="Открыть..." Click="OpenFileButtonClick" Command="{Binding Path=AnalysisAsynCommand}"/>
+            <Button Content="Открыть..." Click="OpenFileButtonClick" Command="{Binding Path=AnalysisAsyncCommand}"/>
             <Button Content="Помощь" Click="HelpButtonClick"/>
         </StatusBar>
 		<StatusBar DockPanel.Dock="Bottom">
@@ -48,7 +48,7 @@
 					<GroupBox.Header>
 						<TextBlock Text="Изображение"/>
 					</GroupBox.Header>
-                    <Image Source="{Binding Path=PathToOriginal}"/>
+                    <Image Source="{Binding Path=PathToResavedOrig}" MouseUp="ResavedOrig_MouseUp_Open"/>
                 </GroupBox>
 				<GridSplitter Grid.Row="1" ResizeDirection="Rows"/>
 				<!-- Артефакты сжатия -->
@@ -56,7 +56,7 @@
 					<GroupBox.Header>
 						<TextBlock Text="Артефакты сжатия"/>
 					</GroupBox.Header>
-                    <Image Source="{Binding Path=PathToEla}"/>
+                    <Image Source="{Binding Path=PathToEla}" MouseUp="Ela_MouseUp_Open"/>
                 </GroupBox>
 			</Grid>
             <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
