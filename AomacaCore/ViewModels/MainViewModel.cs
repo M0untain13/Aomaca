@@ -1,6 +1,7 @@
 ﻿using AomacaCore.Services;
 using MvvmCross.Commands;
 using MvvmCross.ViewModels;
+using System.Drawing;
 
 namespace AomacaCore.ViewModels;
 
@@ -12,6 +13,17 @@ namespace AomacaCore.ViewModels;
 //TODO: не забудь потом добавить ссылку, откуда взял ELA скрипт
 
 //TODO: нужно будет добавить функцию сохранения результатов
+
+//TODO: надо посмотреть, как будет удобнее, компилить в один файл или в несколько
+
+//TODO: сливать ли несколько скриптов питона в один скрипт или мб получится как-нибудь избежать дублирования библиотек
+
+//TODO: почему-то возникают проблемы со сменой изображений
+//		(надо бы перенести ответственность за отчистку папки Files не на скрипты, а не само приложение)
+
+// TODO: возможно в питоновских скриптах нужно закрывать файлы в конце
+
+// BUG: приложение держит в заложниках изображения, даже после того, как они исчезли из вида
 
 public class MainViewModel : MvxViewModel
 {
@@ -25,16 +37,13 @@ public class MainViewModel : MvxViewModel
 		get => _pathToOriginal;
 		set
 		{
-			if (SetProperty(ref _pathToOriginal, value))
-			{
-				ClearFields();
-                if (value != "")
-					_isStartAnalysis = true;
-            }
+			SetProperty(ref _pathToOriginal, value);
+			_isStartAnalysis = true;
 		}
 	}
 
-	private bool _isStartAnalysis;
+    // TODO: может ли быть такая ситуация, что анализ никогда не начнется?
+    private bool _isStartAnalysis;
 
     #endregion
 
@@ -159,75 +168,77 @@ public class MainViewModel : MvxViewModel
         {
             return Task.Run(() =>
             {
-                #region Фоновые задачи
+                ClearFields();
 
-                var exifAnalysisTask = new Task(() =>
+                var elaTask = new Task(() =>
                 {
-                    Thread.Sleep(1000);
-					var path = analyzerService.ExifMethod(PathToOriginal);
+                    var currentDir = Directory.GetCurrentDirectory();
+                    var (nameResavedOrig, nameEla) = analyzerService.ElaMethod(PathToOriginal);
+                    PathToResavedOrig = $@"{currentDir}\{nameResavedOrig}";
+                    PathToEla = $@"{currentDir}\{nameEla}";
+                });
 
-                    //TODO: Пока что будем верить, что файл нормальный и не имеет ошибок.
-                    
-                    var sr = new StreamReader(path);
+                var exifTask = new Task(() =>
+				{
+					elaTask.Wait();
+
+                    var exifPath = analyzerService.ExifMethod(PathToOriginal);
+                    var sr = new StreamReader(exifPath);
                     var line = sr.ReadLine();
-					var metadata = new Dictionary<string, string>();
+                    var metadata = new Dictionary<string, string>();
                     while (line != null)
                     {
                         var pair = line.Split("||");
-						metadata[pair[0]] = pair[1];
+                        metadata[pair[0]] = pair[1];
                         line = sr.ReadLine();
                     }
-					sr.Close();
+                    sr.Close();
                     ExifAnalysisResult = string.Join('\n', metadata.Values);
                     StatusText = "Анализ EXIF завершил свою работу.";
                 });
 
-                var elaAnalysisTask = new Task(() =>
+                var cnnTask = new Task(() =>
                 {
-                    Thread.Sleep(500);
-					var currentDir = System.IO.Directory.GetCurrentDirectory();
-
-                    var (nameResavedOrig, nameEla) = analyzerService.ElaMethod(PathToOriginal);
-					PathToResavedOrig = $@"{currentDir}\{nameResavedOrig}";
-					PathToEla = $@"{currentDir}\{nameEla}";
+					elaTask.Wait();
 
                     _fakeChance = analyzerService.NeuralNetworkMethod(PathToEla);
-
                     ElaAnalysisResult = $"Нейросеть считает, что это изображение могло быть подделано с шансом {_fakeChance}%.";
                     StatusText = "Анализ ELA завершил свою работу.";
                 });
 
-                var finalAnalysisTask = new Task(() =>
+                var endTask = new Task(() =>
                 {
-                    exifAnalysisTask.Wait();
-                    elaAnalysisTask.Wait();
-                    Thread.Sleep(1000);
+					exifTask.Wait();
+					cnnTask.Wait();
 
-					// TODO: сделать нормальную реализацию
-
-					if(_fakeChance > 70)
-					{
+                    if (_fakeChance > 70)
+                    {
                         FinalAnalysisResult = "Вывод: Изображение было подделано.";
                     }
-					else
-					{
+                    else
+                    {
                         FinalAnalysisResult = "N/A";
                     }
-
                     StatusText = "Анализ завершён.";
                 });
 
-                #endregion
-
-				// TODO: может ли быть такая ситуация, что анализ никогда не начнется?
                 while (!_isStartAnalysis) { }
-
-                exifAnalysisTask.Start();
-                elaAnalysisTask.Start();
-                finalAnalysisTask.Start();
-
-                finalAnalysisTask.Wait();
                 _isStartAnalysis = false;
+
+                
+
+                var dirInfo = new DirectoryInfo("Files");
+                foreach (var file in dirInfo.GetFiles())
+                {
+                    file.Delete();
+                }
+
+                elaTask.Start();
+				exifTask.Start();
+				cnnTask.Start();
+				endTask.Start();
+
+				endTask.Wait();
             });
         });
 
