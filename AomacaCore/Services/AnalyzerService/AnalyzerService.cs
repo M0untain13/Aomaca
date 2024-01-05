@@ -1,7 +1,10 @@
 ﻿using System.Diagnostics;
-using System.IO;
 
-namespace AomacaCore.Services;
+namespace AomacaCore.Services.AnalyzerService;
+
+
+// TODO: все публичные методы должны возвращать одну строку
+
 
 public class AnalyzerService : IAnalyzerService
 {
@@ -32,6 +35,7 @@ public class AnalyzerService : IAnalyzerService
 	{
         var info = new ProcessStartInfo
         {
+            // TODO: мне кажется, надо вынести все пути в файл конфигурации
             FileName = @"PyScripts\main.dist\main.exe",
             Arguments = args,
             UseShellExecute = false,

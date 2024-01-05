@@ -1,4 +1,4 @@
-﻿namespace AomacaCore.Services;
+﻿namespace AomacaCore.Services.AnalyzerService;
 
 public interface IAnalyzerService
 {

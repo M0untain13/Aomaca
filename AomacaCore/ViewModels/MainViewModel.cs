@@ -1,7 +1,7 @@
-﻿using AomacaCore.Services;
-using MvvmCross.Commands;
+﻿using MvvmCross.Commands;
 using MvvmCross.ViewModels;
 using System.Drawing;
+using AomacaCore.Services.AnalyzerService;
 
 namespace AomacaCore.ViewModels;
 
@@ -24,6 +24,8 @@ namespace AomacaCore.ViewModels;
 // TODO: возможно в питоновских скриптах нужно закрывать файлы в конце
 
 // BUG: приложение держит в заложниках изображения, даже после того, как они исчезли из вида
+
+// TODO: надо добавить начальное окно, которое будет проверять наличие и целостность скриптов, при их отсутствии пусть попытается скачать
 
 public class MainViewModel : MvxViewModel
 {
@@ -228,6 +230,10 @@ public class MainViewModel : MvxViewModel
                 
 
                 var dirInfo = new DirectoryInfo("Files");
+                if (!dirInfo.Exists)
+                {
+                    dirInfo.Create();
+                }
                 foreach (var file in dirInfo.GetFiles())
                 {
                     file.Delete();
@@ -246,5 +252,6 @@ public class MainViewModel : MvxViewModel
     }
 
 	private void ClearFields() => 
-		PathToResavedOrig = PathToEla = DateCreate = DateEdit = Device = ExifAnalysisResult = ElaAnalysisResult = FinalAnalysisResult = string.Empty;
+		PathToResavedOrig = PathToEla = DateCreate = DateEdit = Device = ExifAnalysisResult = ElaAnalysisResult = FinalAnalysisResult 
+            = string.Empty;
 }
