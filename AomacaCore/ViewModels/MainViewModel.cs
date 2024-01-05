@@ -1,6 +1,5 @@
 ﻿using MvvmCross.Commands;
 using MvvmCross.ViewModels;
-using System.Drawing;
 using AomacaCore.Services.AnalyzerService;
 
 namespace AomacaCore.ViewModels;
@@ -8,18 +7,15 @@ namespace AomacaCore.ViewModels;
 //TODO: Кстати, ты потом прошерсти весь код на шарпе и питоне, чтобы все по красоте было.
 //		(форматирование и проверка на возникновение ошибок)
 
-//TODO: При сборке необходимо, чтобы как-то PyScripts попадал в папку сборки, иначе анализ работать не будет
+//TODO: При запуске приложения, отсутствующий скрипт может скачаться с инета, но я думаю, нужно сделать устновщик, который вместе с приложением установит и скрипты
 
-//TODO: не забудь потом добавить ссылку, откуда взял ELA скрипт
+//TODO: не забудь потом добавить ссылку, откуда взял ELA/EXIF скрипты и FileDownloader
 
 //TODO: нужно будет добавить функцию сохранения результатов
 
-//TODO: почему-то возникают проблемы со сменой изображений
-//		(надо бы перенести ответственность за отчистку папки Files не на скрипты, а не само приложение)
-
 // TODO: возможно в питоновских скриптах нужно закрывать файлы в конце
 
-// BUG: приложение держит в заложниках изображения, даже после того, как они исчезли из вида
+// BUG: приложение держит в заложниках изображения до момента закрытия приложения
 
 public class MainViewModel : MvxViewModel
 {
@@ -48,7 +44,15 @@ public class MainViewModel : MvxViewModel
         get => _pathToResavedOrig;
         set => SetProperty(ref _pathToResavedOrig, value);
     }
+    /*
+    private MemoryStream _resOrig;
 
+    public MemoryStream ResOrig
+    {
+        get => _resOrig;
+        set => SetProperty(ref _resOrig, value);
+    }
+    */
     #endregion
 
     #region Путь до ELA изображения
@@ -163,6 +167,7 @@ public class MainViewModel : MvxViewModel
             {
                 ClearFields();
 
+
                 var elaTask = new Task(() =>
                 {
                     var currentDir = Directory.GetCurrentDirectory();
@@ -233,7 +238,16 @@ public class MainViewModel : MvxViewModel
                     }
                     foreach (var file in dirInfo.GetFiles())
                     {
-                        file.Delete();
+                        while(true)
+                            try
+                            {
+                                file.Delete();
+                                break;
+                            }
+                            catch
+                            {
+                                Thread.Sleep(200);
+                            }
                     }
 
                     elaTask.Start();
