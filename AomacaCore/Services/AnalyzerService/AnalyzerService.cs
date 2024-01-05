@@ -1,9 +1,7 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
 
 namespace AomacaCore.Services.AnalyzerService;
-
-
-// TODO: все публичные методы должны возвращать одну строку
 
 
 public class AnalyzerService : IAnalyzerService
@@ -15,28 +13,30 @@ public class AnalyzerService : IAnalyzerService
         return @$"{filesDir}\exif_result.txt";
 	}
 
-	public (string, string) ElaMethod(string path)
+	public string ElaMethod(string path)
 	{
         RunCmd( $"ela \"{path}\" 25");
 
-        return (@$"{filesDir}\resaved_image.jpg", @$"{filesDir}\ela_image.png");
+        return @$"{filesDir}\resaved_image.jpg {filesDir}\ela_image.png";
 	}
 
-	public decimal NeuralNetworkMethod(string path)
+	public string NeuralNetworkMethod(string path)
 	{
 		// TODO: убрать заглушку и реализовать метод
-		return 95.23M;
+		return "95,23";
 	}
 
-    // Директория, куда будут сохранятся файлы
+    // Где будут сохранятся файлы
     private const string filesDir = "Files";
+    // Где лежат скрипты
+    private const string scriptDir = "PyScripts";
 
     private void RunCmd(string args)
 	{
         var info = new ProcessStartInfo
         {
             // TODO: мне кажется, надо вынести все пути в файл конфигурации
-            FileName = @"PyScripts\main.dist\main.exe",
+            FileName = @$"{scriptDir}\main.dist\main.exe",
             Arguments = args,
             UseShellExecute = false,
             CreateNoWindow = true, 

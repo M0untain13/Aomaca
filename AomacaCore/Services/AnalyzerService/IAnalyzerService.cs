@@ -4,7 +4,7 @@ public interface IAnalyzerService
 {
 	string ExifMethod(string path);
 
-	(string, string) ElaMethod(string path);
+	string ElaMethod(string path);
 
-	decimal NeuralNetworkMethod(string path);
+	string NeuralNetworkMethod(string path);
 }

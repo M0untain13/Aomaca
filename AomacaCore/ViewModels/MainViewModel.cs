@@ -14,18 +14,12 @@ namespace AomacaCore.ViewModels;
 
 //TODO: нужно будет добавить функцию сохранения результатов
 
-//TODO: надо посмотреть, как будет удобнее, компилить в один файл или в несколько
-
-//TODO: сливать ли несколько скриптов питона в один скрипт или мб получится как-нибудь избежать дублирования библиотек
-
 //TODO: почему-то возникают проблемы со сменой изображений
 //		(надо бы перенести ответственность за отчистку папки Files не на скрипты, а не само приложение)
 
 // TODO: возможно в питоновских скриптах нужно закрывать файлы в конце
 
 // BUG: приложение держит в заложниках изображения, даже после того, как они исчезли из вида
-
-// TODO: надо добавить начальное окно, которое будет проверять наличие и целостность скриптов, при их отсутствии пусть попытается скачать
 
 public class MainViewModel : MvxViewModel
 {
@@ -37,15 +31,12 @@ public class MainViewModel : MvxViewModel
 	public string PathToOriginal
 	{
 		get => _pathToOriginal;
-		set
-		{
-			SetProperty(ref _pathToOriginal, value);
-			_isStartAnalysis = true;
-		}
-	}
+		set => SetProperty(ref _pathToOriginal, value);
+    }
 
-    // TODO: может ли быть такая ситуация, что анализ никогда не начнется?
-    private bool _isStartAnalysis;
+    public bool 
+        isSignal,
+        isCancel;
 
     #endregion
 
@@ -175,7 +166,9 @@ public class MainViewModel : MvxViewModel
                 var elaTask = new Task(() =>
                 {
                     var currentDir = Directory.GetCurrentDirectory();
-                    var (nameResavedOrig, nameEla) = analyzerService.ElaMethod(PathToOriginal);
+                    var result = analyzerService.ElaMethod(PathToOriginal).Split();
+                    var nameResavedOrig = result[0];
+                    var nameEla = result[1];
                     PathToResavedOrig = $@"{currentDir}\{nameResavedOrig}";
                     PathToEla = $@"{currentDir}\{nameEla}";
                 });
@@ -203,7 +196,7 @@ public class MainViewModel : MvxViewModel
                 {
 					elaTask.Wait();
 
-                    _fakeChance = analyzerService.NeuralNetworkMethod(PathToEla);
+                    _fakeChance = Convert.ToDecimal(analyzerService.NeuralNetworkMethod(PathToEla));
                     ElaAnalysisResult = $"Нейросеть считает, что это изображение могло быть подделано с шансом {_fakeChance}%.";
                     StatusText = "Анализ ELA завершил свою работу.";
                 });
@@ -224,27 +217,32 @@ public class MainViewModel : MvxViewModel
                     StatusText = "Анализ завершён.";
                 });
 
-                while (!_isStartAnalysis) { }
-                _isStartAnalysis = false;
+                while (!isSignal) { Thread.Sleep(250); }
+                isSignal = false;
 
-                
-
-                var dirInfo = new DirectoryInfo("Files");
-                if (!dirInfo.Exists)
+                if (isCancel)
                 {
-                    dirInfo.Create();
+                    isCancel = false;
                 }
-                foreach (var file in dirInfo.GetFiles())
+                else
                 {
-                    file.Delete();
+                    var dirInfo = new DirectoryInfo("Files");
+                    if (!dirInfo.Exists)
+                    {
+                        dirInfo.Create();
+                    }
+                    foreach (var file in dirInfo.GetFiles())
+                    {
+                        file.Delete();
+                    }
+
+                    elaTask.Start();
+                    exifTask.Start();
+                    cnnTask.Start();
+                    endTask.Start();
+
+                    endTask.Wait();
                 }
-
-                elaTask.Start();
-				exifTask.Start();
-				cnnTask.Start();
-				endTask.Start();
-
-				endTask.Wait();
             });
         });
 

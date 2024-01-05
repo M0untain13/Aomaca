@@ -25,6 +25,9 @@ public class StartViewModel : MvxViewModel
 
     private string _errorText = "";
 
+    // Где лежат скрипты
+    private const string scriptDir = "PyScripts";
+
     private bool
         _isChecked,
         _isDownloaded,
@@ -54,10 +57,10 @@ public class StartViewModel : MvxViewModel
         {
             // TODO: мне кажется, надо вынести все пути в файл конфигурации
             _isDownloaded = true;
-            var distDir = new DirectoryInfo(@"PyScripts\main.dist");
+            var distDir = new DirectoryInfo(@$"{scriptDir}\main.dist");
             if (distDir.Exists)
             {
-                var scriptFile = new FileInfo(@"PyScripts\main.dist\main.exe");
+                var scriptFile = new FileInfo(@$"{scriptDir}\main.dist\main.exe");
                 if (scriptFile.Exists)
                     _isDownloaded = false;
             }
@@ -67,11 +70,11 @@ public class StartViewModel : MvxViewModel
             {
                 if (CheckInternetConnection())
                 {
-                    _downloaderService.DownloadFile("https://drive.google.com/file/d/1DbWW5-9tupImSurE2pkpcSKK-x9BHaJl/view?usp=sharing", @"PyScripts\main.dist.zip");
+                    _downloaderService.DownloadFile("https://drive.google.com/file/d/1DbWW5-9tupImSurE2pkpcSKK-x9BHaJl/view?usp=sharing", @$"{scriptDir}\main.dist.zip");
 
                     System.IO.Compression.ZipFile.ExtractToDirectory(
-                        @"PyScripts\main.dist.zip",
-                        "PyScripts");
+                        @$"{scriptDir}\main.dist.zip",
+                        scriptDir);
                 }
                 else
                 {

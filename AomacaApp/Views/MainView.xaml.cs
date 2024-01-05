@@ -18,12 +18,16 @@ public partial class MainView : MvxWpfView
     {
         var openFileDialog = new OpenFileDialog();
 
-        if (!(openFileDialog.ShowDialog() ?? false)) 
-            return;
-
         if (DataContext is MainViewModel viewModel)
-            viewModel.PathToOriginal = openFileDialog.FileName;
-              
+        {
+            var result = openFileDialog.ShowDialog() ?? false;
+            if (result)
+                viewModel.PathToOriginal = openFileDialog.FileName;
+            else
+                viewModel.isCancel = true;
+            viewModel.isSignal = true;
+        }
+            
     }
 
     private void ResavedOrig_MouseUp_Open(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -38,4 +42,3 @@ public partial class MainView : MvxWpfView
             Process.Start("explorer.exe", viewModel.PathToEla);
     }
 }
-//TODO: перед новым анализом нужно удалить старые файлы
