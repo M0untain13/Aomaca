@@ -62,25 +62,11 @@ public class MainViewModel : MvxViewModel
 
 	#region Метаданные
 
-	private string _dateCreate = string.Empty;
-	public string DateCreate
+	private string _metadataText = string.Empty;
+	public string MetadataText
 	{
-		get => _dateCreate;
-		private set => SetProperty(ref _dateCreate, value);
-	}
-
-	private string _dateEdit = string.Empty;
-	public string DateEdit
-	{
-		get => _dateEdit;
-		private set => SetProperty(ref _dateEdit, value);
-	}
-
-	private string _device = string.Empty;
-	public string Device
-	{
-		get => _device;
-		private set => SetProperty(ref _device, value);
+		get => _metadataText;
+		private set => SetProperty(ref _metadataText, value);
 	}
 
 	#endregion
@@ -184,6 +170,7 @@ public class MainViewModel : MvxViewModel
                     var sr = new StreamReader(exifPath);
                     var line = sr.ReadLine();
                     var metadata = new Dictionary<string, string>();
+                    var metadataKeys = new[] { "Software", "DateTimeOriginal", "DateTime" };
                     while (line != null)
                     {
                         var pair = line.Split("||");
@@ -191,7 +178,24 @@ public class MainViewModel : MvxViewModel
                         line = sr.ReadLine();
                     }
                     sr.Close();
-                    ExifAnalysisResult = string.Join('\n', metadata.Values);
+
+                    foreach(var pair in metadata)
+                    {
+                        if (metadataKeys.Contains(pair.Key))
+                        {
+                            if (MetadataText != "")
+                                MetadataText += '\n';
+                            MetadataText += pair.Value;
+                        }
+                        else
+                        {
+                            if (ExifAnalysisResult != "")
+                                ExifAnalysisResult += '\n';
+                            ExifAnalysisResult += pair.Value;
+                        }
+                    }
+                    if (ExifAnalysisResult == "")
+                        ExifAnalysisResult = "В метаданных признаки не обнаружены.";
                     StatusText = "Анализ EXIF завершил свою работу.";
                 });
 
@@ -262,6 +266,6 @@ public class MainViewModel : MvxViewModel
     }
 
 	private void ClearFields() => 
-		PathToResavedOrig = PathToEla = DateCreate = DateEdit = Device = ExifAnalysisResult = ElaAnalysisResult = FinalAnalysisResult 
+		PathToResavedOrig = PathToEla = MetadataText = ExifAnalysisResult = ElaAnalysisResult = FinalAnalysisResult 
             = string.Empty;
 }

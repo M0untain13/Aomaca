@@ -77,9 +77,7 @@
 					</GroupBox.Header>
                     <StackPanel>
                         <TextBlock x:Name="pathToOrig" Text="{Binding Path=PathToOriginal, UpdateSourceTrigger=PropertyChanged}"/>
-                        <TextBlock Text="{Binding Path=Device}"/>
-                        <TextBlock Text="{Binding Path=DateCreate}"/>
-                        <TextBlock Text="{Binding Path=DateEdit}"/>
+                        <TextBlock Text="{Binding Path=MetadataText}"/>
                     </StackPanel>
                 </GroupBox>
                 <GridSplitter Grid.Row="1" ResizeDirection="Rows"/>
