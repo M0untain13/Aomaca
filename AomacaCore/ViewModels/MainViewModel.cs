@@ -1,13 +1,14 @@
 ﻿using MvvmCross.Commands;
 using MvvmCross.ViewModels;
 using AomacaCore.Services.AnalyzerService;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace AomacaCore.ViewModels;
 
 //TODO: Кстати, ты потом прошерсти весь код на шарпе и питоне, чтобы все по красоте было.
 //		(форматирование и проверка на возникновение ошибок)
 
-//TODO: При запуске приложения, отсутствующий скрипт может скачаться с инета, но я думаю, нужно сделать устновщик, который вместе с приложением установит и скрипты
+//TODO: При запуске приложения, отсутствующий скрипт может скачаться с инета, но я думаю, нужно сделать установщик, который вместе с приложением установит и скрипты
 
 //TODO: не забудь потом добавить ссылку, откуда взял ELA/EXIF скрипты и FileDownloader
 
@@ -17,11 +18,13 @@ namespace AomacaCore.ViewModels;
 
 public class MainViewModel : MvxViewModel
 {
-	#region Данные
+    private readonly IAnalyzerService _analyzerService;
 
-	#region Путь до исходного изображения
+    #region Данные
 
-	private string _pathToOriginal = string.Empty;
+    #region Путь до исходного изображения
+
+    private string _pathToOriginal = string.Empty;
 	public string PathToOriginal
 	{
 		get => _pathToOriginal;
@@ -119,14 +122,27 @@ public class MainViewModel : MvxViewModel
 
     #endregion
 
-    public bool
-        isSignal,
-        isCancel;
+    private bool
+        _isSignal,
+        _isCancel;
+
+    public void AnalysisStart()
+    {
+        _isSignal = true;
+    }
+
+    public void AnalysisCancel()
+    {
+        _isCancel = true;
+        _isSignal = true;
+    }
 
     public IMvxAsyncCommand AnalysisAsyncCommand { get; }
 
     public MainViewModel(IAnalyzerService analyzerService)
 	{
+        _analyzerService = analyzerService;
+
         #region Таймер для отчистки статус-бара
 
         Task.Run(() =>
@@ -149,90 +165,17 @@ public class MainViewModel : MvxViewModel
         {
             return Task.Run(() =>
             {
-                ClearFields();
+                while (!_isSignal) { Thread.Sleep(250); }
+                _isSignal = false;
 
-
-                var elaTask = new Task(() =>
+                if (_isCancel)
                 {
-                    var currentDir = Directory.GetCurrentDirectory();
-                    var result = analyzerService.ElaMethod(PathToOriginal).Split();
-                    var nameResavedOrig = result[0];
-                    var nameEla = result[1];
-                    PathToResavedOrig = $@"{currentDir}\{nameResavedOrig}";
-                    PathToEla = $@"{currentDir}\{nameEla}";
-                });
-
-                var exifTask = new Task(() =>
-				{
-					elaTask.Wait();
-
-                    var exifPath = analyzerService.ExifMethod(PathToOriginal);
-                    var sr = new StreamReader(exifPath);
-                    var line = sr.ReadLine();
-                    var metadata = new Dictionary<string, string>();
-                    var metadataKeys = new[] { "Software", "DateTimeOriginal", "DateTime" };
-                    while (line != null)
-                    {
-                        var pair = line.Split("||");
-                        metadata[pair[0]] = pair[1];
-                        line = sr.ReadLine();
-                    }
-                    sr.Close();
-
-                    foreach(var pair in metadata)
-                    {
-                        if (metadataKeys.Contains(pair.Key))
-                        {
-                            if (MetadataText != "")
-                                MetadataText += '\n';
-                            MetadataText += pair.Value;
-                        }
-                        else
-                        {
-                            if (ExifAnalysisResult != "")
-                                ExifAnalysisResult += '\n';
-                            ExifAnalysisResult += pair.Value;
-                        }
-                    }
-                    if (ExifAnalysisResult == "")
-                        ExifAnalysisResult = "В метаданных признаки не обнаружены.";
-                    StatusText = "Анализ EXIF завершил свою работу.";
-                });
-
-                var cnnTask = new Task(() =>
-                {
-					elaTask.Wait();
-
-                    _fakeChance = Convert.ToDecimal(analyzerService.NeuralNetworkMethod(PathToEla));
-                    ElaAnalysisResult = $"Нейросеть считает, что это изображение могло быть подделано с шансом {_fakeChance}%.";
-                    StatusText = "Анализ ELA завершил свою работу.";
-                });
-
-                var endTask = new Task(() =>
-                {
-					exifTask.Wait();
-					cnnTask.Wait();
-
-                    if (_fakeChance > 70)
-                    {
-                        FinalAnalysisResult = "Вывод: Изображение было подделано.";
-                    }
-                    else
-                    {
-                        FinalAnalysisResult = "N/A";
-                    }
-                    StatusText = "Анализ завершён.";
-                });
-
-                while (!isSignal) { Thread.Sleep(250); }
-                isSignal = false;
-
-                if (isCancel)
-                {
-                    isCancel = false;
+                    _isCancel = false;
                 }
                 else
                 {
+                    ClearFields();
+
                     var dirInfo = new DirectoryInfo("Files");
                     if (!dirInfo.Exists)
                     {
@@ -240,24 +183,34 @@ public class MainViewModel : MvxViewModel
                     }
                     foreach (var file in dirInfo.GetFiles())
                     {
-                        while(true)
-                            try
-                            {
-                                file.Delete();
-                                break;
-                            }
-                            catch
-                            {
-                                Thread.Sleep(200);
-                            }
+                        file.Delete();
                     }
 
-                    elaTask.Start();
-                    exifTask.Start();
-                    cnnTask.Start();
-                    endTask.Start();
+                    var statusRunning = true;
+                    var statusTask = new Task(() =>
+                    {
+                        while (statusRunning)
+                        {
+                            StatusText = "Подождите. Изображение анализируеся";
+                            for (var i = 0; i < 3; i++)
+                            {
+                                if (!statusRunning)
+                                    break;
+                                StatusText += '.';
+                                Thread.Sleep(400);
+                            }
+                        }
+                    });
 
-                    endTask.Wait();
+                    statusTask.Start();
+                    ExifAnalysis();
+                    ElaAnalysis();
+                    CnnAnalysis();
+                    Conclusion();
+
+                    statusRunning = false;
+                    statusTask.Wait();
+                    StatusText = "Анализ завершён!";
                 }
             });
         });
@@ -265,7 +218,69 @@ public class MainViewModel : MvxViewModel
         #endregion
     }
 
-	private void ClearFields() => 
+    private void ElaAnalysis()
+    {
+        var currentDir = Directory.GetCurrentDirectory();
+        var result = _analyzerService.ElaMethod(PathToOriginal).Split();
+        var nameResavedOrig = result[0];
+        var nameEla = result[1];
+        PathToResavedOrig = $@"{currentDir}\{nameResavedOrig}";
+        PathToEla = $@"{currentDir}\{nameEla}";
+    }
+
+    private void ExifAnalysis()
+    {
+        var exifPath = _analyzerService.ExifMethod(PathToOriginal);
+        var sr = new StreamReader(exifPath);
+        var line = sr.ReadLine();
+        var metadata = new Dictionary<string, string>();
+        var metadataKeys = new[] { "Software", "DateTimeOriginal", "DateTime" };
+        while (line != null)
+        {
+            var pair = line.Split("||");
+            metadata[pair[0]] = pair[1];
+            line = sr.ReadLine();
+        }
+        sr.Close();
+
+        foreach (var pair in metadata)
+        {
+            if (metadataKeys.Contains(pair.Key))
+            {
+                if (MetadataText != "")
+                    MetadataText += '\n';
+                MetadataText += pair.Value;
+            }
+            else
+            {
+                if (ExifAnalysisResult != "")
+                    ExifAnalysisResult += '\n';
+                ExifAnalysisResult += pair.Value;
+            }
+        }
+        if (ExifAnalysisResult == "")
+            ExifAnalysisResult = "В метаданных признаки не обнаружены.";
+    }
+
+    private void CnnAnalysis()
+    {
+        _fakeChance = Convert.ToDecimal(_analyzerService.NeuralNetworkMethod(PathToEla));
+        ElaAnalysisResult = $"Нейросеть считает, что это изображение могло быть подделано с шансом {_fakeChance}%.";
+    }
+
+    private void Conclusion()
+    {
+        if (_fakeChance > 70)
+        {
+            FinalAnalysisResult = "Вывод: Изображение было подделано.";
+        }
+        else
+        {
+            FinalAnalysisResult = "N/A";
+        }
+    }
+
+    private void ClearFields() => 
 		PathToResavedOrig = PathToEla = MetadataText = ExifAnalysisResult = ElaAnalysisResult = FinalAnalysisResult 
             = string.Empty;
 }

@@ -51,7 +51,7 @@ public class StartViewModel : MvxViewModel
         }
     }
 
-    private void Start()
+    private void StartCheck()
     {
         Task.Run(() =>
         {
@@ -122,6 +122,6 @@ public class StartViewModel : MvxViewModel
         _navigationService = navigationService;
         _downloaderService = downloaderService;
         _isChecked = true;
-        Start();
+        StartCheck();
     }
 }

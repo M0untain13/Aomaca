@@ -24,13 +24,12 @@ public partial class MainView : MvxWpfView
         if (result)
         {
             viewModel.PathToOriginal = openFileDialog.FileName;
+            viewModel.AnalysisStart();
         }
         else
         {
-            viewModel.isCancel = true;
+            viewModel.AnalysisCancel();
         }
-            
-        viewModel.isSignal = true;
     }
 
     private void ResavedOrig_MouseUp_Open(object sender, System.Windows.Input.MouseButtonEventArgs e)
