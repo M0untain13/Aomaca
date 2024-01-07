@@ -6,6 +6,7 @@
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:viewModels="clr-namespace:AomacaCore.ViewModels;assembly=AomacaCore"
 	xmlns:views="clr-namespace:MvvmCross.Platforms.Wpf.Views;assembly=MvvmCross.Platforms.Wpf"
+    xmlns:con="clr-namespace:AomacaApp.Converters"
 	mc:Ignorable="d"
 
 	d:DataContext="{d:DesignInstance viewModels:MainViewModel}"
@@ -38,6 +39,9 @@
 				<ColumnDefinition MinWidth="100"/>
 			</Grid.ColumnDefinitions>
 			<Grid Grid.Column="0">
+                <Grid.Resources>
+                    <con:BitmapFrameConverter x:Key="bmcon"/>
+                </Grid.Resources>
 				<Grid.RowDefinitions>
 					<RowDefinition MinHeight="100"/>
 					<RowDefinition Height="8"/>
@@ -48,7 +52,7 @@
 					<GroupBox.Header>
 						<TextBlock Text="Изображение"/>
 					</GroupBox.Header>
-                    <Image Source="{Binding Path=PathToResavedOrig}" MouseUp="ResavedOrig_MouseUp_Open"/>
+                    <Image Source="{Binding Path=PathToResavedOrig, Converter={StaticResource bmcon}}" MouseUp="ResavedOrig_MouseUp_Open"/>
                 </GroupBox>
 				<GridSplitter Grid.Row="1" ResizeDirection="Rows"/>
 				<!-- Артефакты сжатия -->
@@ -56,7 +60,7 @@
 					<GroupBox.Header>
 						<TextBlock Text="Артефакты сжатия"/>
 					</GroupBox.Header>
-                    <Image Source="{Binding Path=PathToEla}" MouseUp="Ela_MouseUp_Open"/>
+                    <Image Source="{Binding Path=PathToEla, Converter={StaticResource bmcon}}" MouseUp="Ela_MouseUp_Open"/>
                 </GroupBox>
 			</Grid>
             <GridSplitter Grid.Column="1" ResizeDirection="Columns" />

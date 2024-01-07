@@ -16,18 +16,21 @@ public partial class MainView : MvxWpfView
 
     private void OpenFileButtonClick(object sender, RoutedEventArgs e)
     {
-        var openFileDialog = new OpenFileDialog();
+        if (DataContext is not MainViewModel viewModel) 
+            return;
 
-        if (DataContext is MainViewModel viewModel)
+        var openFileDialog = new OpenFileDialog();
+        var result = openFileDialog.ShowDialog() ?? false;
+        if (result)
         {
-            var result = openFileDialog.ShowDialog() ?? false;
-            if (result)
-                viewModel.PathToOriginal = openFileDialog.FileName;
-            else
-                viewModel.isCancel = true;
-            viewModel.isSignal = true;
+            viewModel.PathToOriginal = openFileDialog.FileName;
+        }
+        else
+        {
+            viewModel.isCancel = true;
         }
             
+        viewModel.isSignal = true;
     }
 
     private void ResavedOrig_MouseUp_Open(object sender, System.Windows.Input.MouseButtonEventArgs e)

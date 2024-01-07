@@ -15,8 +15,6 @@ namespace AomacaCore.ViewModels;
 
 // TODO: возможно в питоновских скриптах нужно закрывать файлы в конце
 
-// BUG: приложение держит в заложниках изображения до момента закрытия приложения
-
 public class MainViewModel : MvxViewModel
 {
 	#region Данные
@@ -29,10 +27,6 @@ public class MainViewModel : MvxViewModel
 		get => _pathToOriginal;
 		set => SetProperty(ref _pathToOriginal, value);
     }
-
-    public bool 
-        isSignal,
-        isCancel;
 
     #endregion
 
@@ -139,7 +133,11 @@ public class MainViewModel : MvxViewModel
 
     #endregion
 
-	public IMvxAsyncCommand AnalysisAsyncCommand { get; }
+    public bool
+        isSignal,
+        isCancel;
+
+    public IMvxAsyncCommand AnalysisAsyncCommand { get; }
 
     public MainViewModel(IAnalyzerService analyzerService)
 	{
