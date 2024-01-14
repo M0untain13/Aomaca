@@ -1,126 +1,89 @@
-﻿using MvvmCross.Navigation;
+﻿using System.Net;
+using MvvmCross.Navigation;
 using MvvmCross.ViewModels;
 using System.Net.NetworkInformation;
-using AomacaCore.Services.GoogleDownloaderService;
+using System.IO.Compression;
+using System.Text;
 
 namespace AomacaCore.ViewModels;
 
-
+// TODO: мне кажется это надо убрать вообще, ну или сделать проверку целостности, но ничего не качать
 
 public class StartViewModel : MvxViewModel
 {
     private readonly IMvxNavigationService _navigationService;
-    private readonly IGoogleDownloaderService _downloaderService;
 
-    #region Текстовое поле
+    #region Текстовые поля
 
-    private string _text = "";
-    public string Text
+    private string _checkText = "";
+    public string CheckText
     {
-        get => _text;
-        set => SetProperty(ref _text, value);
+        get => _checkText;
+        set => SetProperty(ref _checkText, value);
+    }
+    
+    private string _errorText = "";
+    public string ErrorText
+    {
+        get => _errorText;
+        set => SetProperty(ref _errorText, value);
     }
 
     #endregion
 
-    private string _errorText = "";
-
     // Где лежат скрипты
     private const string scriptDir = "PyScripts";
 
-    private bool
-        _isChecked,
-        _isDownloaded,
-        _isError;
+    private bool _isChecked;
 
-    private bool CheckInternetConnection()
+    private bool IsScriptExists()
     {
-        try
-        {
-            var myPing = new Ping();
-            var host = "google.com";
-            var buffer = new byte[32];
-            var timeout = 1000;
-            var pingOptions = new PingOptions();
-            var reply = myPing.Send(host, timeout, buffer, pingOptions);
-            return (reply.Status == IPStatus.Success);
-        }
-        catch (Exception)
-        {
+        var distDir = new DirectoryInfo(@$"{scriptDir}");
+        if (!distDir.Exists)
             return false;
-        }
+        var scriptFile = new FileInfo(@$"{scriptDir}\main.exe");
+        if (!scriptFile.Exists)
+            return false;
+        return true;
     }
 
     private void StartCheck()
     {
-        Task.Run(() =>
-        {
-            // TODO: мне кажется, надо вынести все пути в файл конфигурации
-            _isDownloaded = true;
-            var distDir = new DirectoryInfo(@$"{scriptDir}\main.dist");
-            if (distDir.Exists)
-            {
-                var scriptFile = new FileInfo(@$"{scriptDir}\main.dist\main.exe");
-                if (scriptFile.Exists)
-                    _isDownloaded = false;
-            }
-
-            _isChecked = false;
-            if (_isDownloaded)
-            {
-                if (CheckInternetConnection())
-                {
-                    _downloaderService.DownloadFile("https://drive.google.com/file/d/1DbWW5-9tupImSurE2pkpcSKK-x9BHaJl/view?usp=sharing", @$"{scriptDir}\main.dist.zip");
-
-                    System.IO.Compression.ZipFile.ExtractToDirectory(
-                        @$"{scriptDir}\main.dist.zip",
-                        scriptDir);
-                }
-                else
-                {
-                    _errorText = "Необходимо подключение к интернету.";
-                    _isError = true;
-                }
-                _isDownloaded = false;
-            }
-        });
-
+        _isChecked = true;
         Task.Run(() =>
         {
             while (_isChecked)
             {
-                Text = "Подождите. Проверка целостности скриптов";
+                CheckText = "Подождите. Проверка целостности скриптов";
                 for (var i = 0; i < 3; i++)
                 {
-                    Text += '.';
+                    if (!_isChecked)
+                        break;
+                    CheckText += '.';
                     Thread.Sleep(400);
                 }
             }
+            CheckText = "";
+        });
 
-            while (_isDownloaded)
+        Task.Run(() =>
+        {
+            var isFileExists = IsScriptExists();
+            _isChecked = false;
+            if (isFileExists)
             {
-                Text = "Файлы не найдены. Попытка скачать";
-                for (var i = 0; i < 3; i++)
-                {
-                    Text += '.';
-                    Thread.Sleep(400);
-                }
-            }
-
-            if (_isError)
-            {
-                Text = "Ошибка! ";
-                Text += _errorText;
+                _navigationService.Navigate<MainViewModel>();
             }
             else
-                _navigationService.Navigate<MainViewModel>();
+            {
+                ErrorText = "Ошибка! Файл(ы) поврежден(ы) или отсутствует(ют).";
+            }
         });
     }
 
-    public StartViewModel(IMvxNavigationService navigationService, IGoogleDownloaderService downloaderService)
+    public StartViewModel(IMvxNavigationService navigationService)
     {
         _navigationService = navigationService;
-        _downloaderService = downloaderService;
         _isChecked = true;
         StartCheck();
     }

@@ -1,7 +1,7 @@
 ﻿using MvvmCross.Commands;
 using MvvmCross.ViewModels;
 using AomacaCore.Services.AnalyzerService;
-using static System.Net.Mime.MediaTypeNames;
+using MvvmCross.Navigation;
 
 namespace AomacaCore.ViewModels;
 
@@ -126,6 +126,8 @@ public class MainViewModel : MvxViewModel
         _isSignal,
         _isCancel;
 
+    private readonly string _scriptDir = "PyScripts";
+
     public void AnalysisStart()
     {
         _isSignal = true;
@@ -139,7 +141,7 @@ public class MainViewModel : MvxViewModel
 
     public IMvxAsyncCommand AnalysisAsyncCommand { get; }
 
-    public MainViewModel(IAnalyzerService analyzerService)
+    public MainViewModel(IAnalyzerService analyzerService, IMvxNavigationService navigationService)
 	{
         _analyzerService = analyzerService;
 
@@ -174,48 +176,57 @@ public class MainViewModel : MvxViewModel
                 }
                 else
                 {
-                    ClearFields();
-
-                    var dirInfo = new DirectoryInfo("Files");
-                    if (!dirInfo.Exists)
-                    {
-                        dirInfo.Create();
-                    }
-                    foreach (var file in dirInfo.GetFiles())
-                    {
-                        file.Delete();
-                    }
-
-                    var statusRunning = true;
-                    var statusTask = new Task(() =>
-                    {
-                        while (statusRunning)
-                        {
-                            StatusText = "Подождите. Изображение анализируеся";
-                            for (var i = 0; i < 3; i++)
-                            {
-                                if (!statusRunning)
-                                    break;
-                                StatusText += '.';
-                                Thread.Sleep(400);
-                            }
-                        }
-                    });
-
-                    statusTask.Start();
-                    ExifAnalysis();
-                    ElaAnalysis();
-                    CnnAnalysis();
-                    Conclusion();
-
-                    statusRunning = false;
-                    statusTask.Wait();
-                    StatusText = "Анализ завершён!";
+                    StartAnalysis();
                 }
             });
         });
 
         #endregion
+    }
+
+    private void ClearFilesDir()
+    {
+        var dirInfo = new DirectoryInfo("Files");
+        if (!dirInfo.Exists)
+        {
+            dirInfo.Create();
+        }
+        foreach (var file in dirInfo.GetFiles())
+        {
+            file.Delete();
+        }
+    }
+
+    private void StartAnalysis()
+    {
+        ClearFields();
+        ClearFilesDir();
+
+        var statusRunning = true;
+        var statusTask = new Task(() =>
+        {
+            while (statusRunning)
+            {
+                StatusText = "Подождите. Изображение анализируется";
+                for (var i = 0; i < 3; i++)
+                {
+                    if (!statusRunning)
+                        break;
+                    StatusText += '.';
+                    Thread.Sleep(400);
+                }
+            }
+        });
+
+        statusTask.Start();
+        ExifAnalysis();
+        ElaAnalysis();
+        CnnAnalysis();
+        Conclusion();
+
+        statusRunning = false;
+        statusTask.Wait();
+        StatusText = "Анализ завершён!";
     }
 
     private void ElaAnalysis()
@@ -264,10 +275,16 @@ public class MainViewModel : MvxViewModel
 
     private void CnnAnalysis()
     {
-        _fakeChance = Convert.ToDecimal(_analyzerService.NeuralNetworkMethod(PathToEla));
-        ElaAnalysisResult = $"Нейросеть считает, что это изображение могло быть подделано с шансом {_fakeChance}%.";
+        var cnnPath = _analyzerService.NeuralNetworkMethod(PathToOriginal);
+        var sr = new StreamReader(cnnPath);
+        var result = sr.ReadLine() ?? "-00.00";
+        sr.Close();
+        _fakeChance = Convert.ToDecimal(result.Replace('.', ','));
+
+        ElaAnalysisResult = $"Нейросеть считает, что это изображение могло быть подделано с шансом {result}%.";
     }
 
+    // TODO: нужно учитывать анализ метаданных
     private void Conclusion()
     {
         if (_fakeChance > 70)

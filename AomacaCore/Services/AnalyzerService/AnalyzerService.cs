@@ -14,15 +14,16 @@ public class AnalyzerService : IAnalyzerService
 
 	public string ElaMethod(string path)
 	{
-        RunCmd( $"ela \"{path}\" 25");
+        RunCmd( $"ela \"{path}\" 100");
 
         return @$"{filesDir}\resaved_image.jpg {filesDir}\ela_image.png";
 	}
 
 	public string NeuralNetworkMethod(string path)
 	{
-		// TODO: убрать заглушку и реализовать метод
-		return "95,23";
+		RunCmd($"cnn \"{path}\"");
+
+		return $@"{filesDir}\cnn_result.txt";
 	}
 
     // Где будут сохранятся файлы
@@ -35,7 +36,7 @@ public class AnalyzerService : IAnalyzerService
         var info = new ProcessStartInfo
         {
             // TODO: мне кажется, надо вынести все пути в файл конфигурации
-            FileName = @$"{scriptDir}\main.dist\main.exe",
+            FileName = @$"{scriptDir}\main.exe",
             Arguments = args,
             UseShellExecute = false,
             CreateNoWindow = true, 
