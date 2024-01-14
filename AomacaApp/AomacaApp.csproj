@@ -17,4 +17,8 @@
     <ProjectReference Include="..\AomacaCore\AomacaCore.csproj" />
   </ItemGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if not exist $(TargetDir)PyScripts mkdir $(TargetDir)PyScripts&#xD;&#xA;copy $(SolutionDir)AomacaCore\PyScripts\main.exe $(TargetDir)PyScripts\main.exe" />
+  </Target>
+
 </Project>
