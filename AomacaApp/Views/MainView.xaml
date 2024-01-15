@@ -26,6 +26,7 @@
 		<StatusBar DockPanel.Dock="Top">
             <Button Content="Открыть..." Click="OpenFileButtonClick" Command="{Binding Path=AnalysisAsyncCommand}"/>
             <Button Content="Помощь" Click="HelpButtonClick"/>
+			<CheckBox Content="Темная тема"/>
         </StatusBar>
 		<StatusBar DockPanel.Dock="Bottom">
 			<StatusBarItem>
