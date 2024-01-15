@@ -14,6 +14,8 @@ namespace AomacaCore.ViewModels;
 
 //TODO: нужно будет добавить функцию сохранения результатов
 
+//TODO: может сделать так, чтобы через консоль в скрипте выводился результат, а не через файл .txt
+
 public class MainViewModel : MvxViewModel
 {
     private readonly IAnalyzerService _analyzerService;
@@ -39,15 +41,7 @@ public class MainViewModel : MvxViewModel
         get => _pathToResavedOrig;
         set => SetProperty(ref _pathToResavedOrig, value);
     }
-    /*
-    private MemoryStream _resOrig;
 
-    public MemoryStream ResOrig
-    {
-        get => _resOrig;
-        set => SetProperty(ref _resOrig, value);
-    }
-    */
     #endregion
 
     #region Путь до ELA изображения
@@ -70,40 +64,51 @@ public class MainViewModel : MvxViewModel
 		private set => SetProperty(ref _metadataText, value);
 	}
 
-	#endregion
+    #endregion
 
-	#region Анализ
+    #region Анализ
 
-	private string _exifAnalysisResult = string.Empty;
-	public string ExifAnalysisResult
-	{
-		get => _exifAnalysisResult;
-		private set => SetProperty(ref _exifAnalysisResult, value);
-	}
+    #region Текстовые выводы
 
-	private string _elaAnalysisResult = string.Empty;
-	public string ElaAnalysisResult
-	{
-		get => _elaAnalysisResult;
-		private set => SetProperty(ref _elaAnalysisResult, value);
-	}
+    private string _exifAnalysisResult = string.Empty;
+    public string ExifAnalysisResult
+    {
+        get => _exifAnalysisResult;
+        private set => SetProperty(ref _exifAnalysisResult, value);
+    }
 
-	private decimal _fakeChance = 0.00M;
+    private string _elaAnalysisResult = string.Empty;
+    public string ElaAnalysisResult
+    {
+        get => _elaAnalysisResult;
+        private set => SetProperty(ref _elaAnalysisResult, value);
+    }
 
-	private string _finalAnalysisResult = string.Empty;
-	public string FinalAnalysisResult
-	{
-		get => _finalAnalysisResult;
-		private set => SetProperty(ref _finalAnalysisResult, value);
-	}
+    private string _finalAnalysisResult = string.Empty;
+    public string FinalAnalysisResult
+    {
+        get => _finalAnalysisResult;
+        private set => SetProperty(ref _finalAnalysisResult, value);
+    }
 
-	#endregion
+    #endregion
 
-	#endregion
+    #region Результаты
 
-	#region Статус-бар
+    private decimal _fakeChance = 0.00M;
 
-	private string _statusText = string.Empty;
+    // TODO: нужно отметить обнаружение признаков редактирования в метаданных
+    private bool _metadataFeaturesDetected;
+
+    #endregion
+
+    #endregion
+
+    #endregion
+
+    #region Статус-бар
+
+    private string _statusText = string.Empty;
 	public string StatusText
 	{
 		get => _statusText;
@@ -233,50 +238,22 @@ public class MainViewModel : MvxViewModel
         var result = _analyzerService.ElaMethod(PathToOriginal).Split();
         var nameResavedOrig = result[0];
         var nameEla = result[1];
+
         PathToResavedOrig = $@"{currentDir}\{nameResavedOrig}";
         PathToEla = $@"{currentDir}\{nameEla}";
     }
 
     private void ExifAnalysis()
     {
-        var exifPath = _analyzerService.ExifMethod(PathToOriginal);
-        var sr = new StreamReader(exifPath);
-        var line = sr.ReadLine();
-        var metadata = new Dictionary<string, string>();
-        var metadataKeys = new[] { "Software", "DateTimeOriginal", "DateTime" };
-        while (line != null)
-        {
-            var pair = line.Split("||");
-            metadata[pair[0]] = pair[1];
-            line = sr.ReadLine();
-        }
-        sr.Close();
-
-        foreach (var pair in metadata)
-        {
-            if (metadataKeys.Contains(pair.Key))
-            {
-                if (MetadataText != "")
-                    MetadataText += '\n';
-                MetadataText += pair.Value;
-            }
-            else
-            {
-                if (ExifAnalysisResult != "")
-                    ExifAnalysisResult += '\n';
-                ExifAnalysisResult += pair.Value;
-            }
-        }
-        if (ExifAnalysisResult == "")
-            ExifAnalysisResult = "В метаданных признаки не обнаружены.";
+        var exifResult = _analyzerService.ExifMethod(PathToOriginal).Split("||");
+        
+        MetadataText = exifResult[0];
+        ExifAnalysisResult = exifResult[1];
     }
 
     private void CnnAnalysis()
     {
-        var cnnPath = _analyzerService.NeuralNetworkMethod(PathToOriginal);
-        var sr = new StreamReader(cnnPath);
-        var result = sr.ReadLine() ?? "-00.00";
-        sr.Close();
+        var result = _analyzerService.NeuralNetworkMethod(PathToOriginal);
         _fakeChance = Convert.ToDecimal(result.Replace('.', ','));
 
         ElaAnalysisResult = $"Нейросеть считает, что это изображение могло быть подделано с шансом {result}%.";
