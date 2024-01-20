@@ -16,6 +16,8 @@ namespace AomacaCore.ViewModels;
 
 //TODO: может сделать так, чтобы через консоль в скрипте выводился результат, а не через файл .txt
 
+//TODO: следует вычислить контрольные суммы, когда буду установщик архивировать и кидать на яндекс или гугл диск.
+
 public class MainViewModel : MvxViewModel
 {
     private readonly IAnalyzerService _analyzerService;
