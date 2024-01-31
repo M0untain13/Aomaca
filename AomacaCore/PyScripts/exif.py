@@ -1,4 +1,4 @@
-import os, sys
+import sys
 from PIL import Image
 from PIL.ExifTags import TAGS
 
@@ -6,8 +6,7 @@ from PIL.ExifTags import TAGS
 def CreateMetadataFile(path):
     texts = {'SoftDetected': 'Обнаружена программа для редактирования фото.',
              'SoftNotDetected': 'Название устройства или ПО отсутствует.',
-             'DTOrigNotDetected': 'Дата создания отсутствует.',
-             'DTNotDetected': 'Дата изменения отсутствует.',
+             'DateTimeNotDetected': 'отсутствует.',
              'DateDiffDetected': 'Дата создания и дата изменения не совпадают.',
              'Error': 'Метаданные не обнаружены.'
              }
@@ -28,7 +27,8 @@ def CreateMetadataFile(path):
         if 'Software' in metaData:  # Анализируем программное обеспечение
             result['Software'] = metaData['Software']
             for program in programs:
-                if program in result['Software']:
+                program = program.lower()
+                if program in result['Software'].lower():
                     result['SoftDetected'] = texts['SoftDetected']
                     break
         else:
@@ -37,32 +37,33 @@ def CreateMetadataFile(path):
         if 'DateTimeOriginal' in metaData:  # Анализируем дату создания и дату изменения
             result['DateTimeOriginal'] = metaData['DateTimeOriginal']
         else:
-            result['DateTimeOriginal'] = texts['DTOrigNotDetected']
+            result['DateTimeOriginal'] = texts['DateTimeNotDetected']
 
         if 'DateTime' in metaData:
             result['DateTime'] = metaData['DateTime']
         else:
-            result['DateTime'] = texts['DTNotDetected']
+            result['DateTime'] = texts['DateTimeNotDetected']
 
-        if result['DateTimeOriginal'] != texts['DTOrigNotDetected'] \
-                and result['DateTime'] != texts['DTNotDetected'] \
+        if result['DateTimeOriginal'] != texts['DateTimeNotDetected'] \
+                and result['DateTime'] != texts['DateTimeNotDetected'] \
                 and result['DateTimeOriginal'] != result['DateTime']:
             result['DateDiffDetected'] = texts['DateDiffDetected']
     else:
         result['Error'] = texts['Error']
 
     string = ''
+
+    if 'Software' in result.keys():
+        result['Software'] = 'ПО: ' + result['Software']
+    if 'DateTimeOriginal' in result.keys():
+        result['DateTimeOriginal'] = 'Дата создания: ' + result['DateTimeOriginal']
+    if 'DateTime' in result.keys():
+        result['DateTime'] = 'Дата изменения: ' + result['DateTime']
+
     for key in result:
         string += f'{key}||{result[key]}\n'
 
-    if not os.path.isdir("Files"):
-        os.mkdir("Files")
-    if os.path.exists("Files\\exif_result.txt"):
-        os.remove("Files\\exif_result.txt")
-
-    file = open("Files\\exif_result.txt", "w", encoding='utf-8')
-    file.write(string)
-    file.close()
+    print(string)
 
 
 if __name__ == "__main__":

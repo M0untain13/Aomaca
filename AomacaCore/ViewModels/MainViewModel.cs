@@ -14,13 +14,9 @@ namespace AomacaCore.ViewModels;
 
 //TODO: нужно будет добавить функцию сохранения результатов
 
-//TODO: может сделать так, чтобы через консоль в скрипте выводился результат, а не через файл .txt
-
 //TODO: следует вычислить контрольные суммы, когда буду установщик архивировать и кидать на яндекс или гугл диск.
 
 //TODO: привести интерфейс к нормальному виду
-
-//TODO: в скриптах убрать работу с OS, чтобы антивирусы не ругались
 
 public class MainViewModel : MvxViewModel
 {
@@ -270,7 +266,6 @@ public class MainViewModel : MvxViewModel
         ElaAnalysisResult = "Анализ нейросети не настроен.";
     }
 
-    // TODO: нужно учитывать анализ метаданных
     private void Conclusion()
     {
         if (_fakeChance > 70 || _isExifAnalysisDetected)

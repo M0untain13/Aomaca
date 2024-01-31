@@ -1,15 +1,9 @@
-import os, sys
+import sys
 from PIL import Image, ImageChops, ImageEnhance
 
 
 def CreateElaImage(path, quality):
     original_image = Image.open(path).convert("RGB")
-    if not os.path.isdir("Files"):
-        os.mkdir("Files")
-    if os.path.exists("Files\\resaved_image.txt"):
-        os.remove("Files\\resaved_image.txt")
-    if os.path.exists("Files\\ela_image.txt"):
-        os.remove("Files\\ela_image.txt")
 
     # resaving input image at the desired quality
     resaved_file_name = "Files\\resaved_image.jpg"  # predefined filename for resaved image
@@ -30,7 +24,6 @@ def CreateElaImage(path, quality):
     ela_image = ImageEnhance.Brightness(ela_image).enhance(scale)
 
     ela_image.save("Files\\ela_image.png")
-    return ela_image
 
 
 if __name__ == "__main__":

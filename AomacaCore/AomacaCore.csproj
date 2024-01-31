@@ -8,6 +8,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="PyScripts\main.build\**" />
+    <Compile Remove="PyScripts\main.dist\**" />
+    <Compile Remove="PyScripts\main.onefile-build\**" />
+    <Compile Remove="PyScripts\venv\**" />
+    <EmbeddedResource Remove="PyScripts\main.build\**" />
+    <EmbeddedResource Remove="PyScripts\main.dist\**" />
+    <EmbeddedResource Remove="PyScripts\main.onefile-build\**" />
+    <EmbeddedResource Remove="PyScripts\venv\**" />
+    <None Remove="PyScripts\main.build\**" />
+    <None Remove="PyScripts\main.dist\**" />
+    <None Remove="PyScripts\main.onefile-build\**" />
+    <None Remove="PyScripts\venv\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MetadataExtractor" Version="2.8.1" />
     <PackageReference Include="MvvmCross" Version="9.1.1" />
   </ItemGroup>

@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/AomacaCore/PyScripts/.idea
+/AomacaCore/PyScripts/.venv
+/AomacaCore/PyScripts/main.dist

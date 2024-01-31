@@ -1,15 +1,9 @@
-import os, sys
+import sys
 
 
 # TODO: заменить заглушку на нормальную реализацию
 def CreateFileWithAnswer(path):
-    if not os.path.isdir("Files"):
-        os.mkdir("Files")
-    if os.path.exists("Files\\cnn_result.txt"):
-        os.remove("Files\\cnn_result.txt")
-    file = open("Files\\cnn_result.txt", "w", encoding='utf-8')
-    file.write('94.34')
-    file.close()
+    print('00.00')
 
 
 if __name__ == '__main__':
