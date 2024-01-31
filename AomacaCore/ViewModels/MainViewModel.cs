@@ -18,6 +18,10 @@ namespace AomacaCore.ViewModels;
 
 //TODO: следует вычислить контрольные суммы, когда буду установщик архивировать и кидать на яндекс или гугл диск.
 
+//TODO: привести интерфейс к нормальному виду
+
+//TODO: в скриптах убрать работу с OS, чтобы антивирусы не ругались
+
 public class MainViewModel : MvxViewModel
 {
     private readonly IAnalyzerService _analyzerService;
@@ -129,7 +133,8 @@ public class MainViewModel : MvxViewModel
 
     private bool
         _isSignal,
-        _isCancel;
+        _isCancel,
+        _isExifAnalysisDetected;
 
     private readonly string _scriptDir = "PyScripts";
 
@@ -251,30 +256,39 @@ public class MainViewModel : MvxViewModel
         
         MetadataText = exifResult[0];
         ExifAnalysisResult = exifResult[1];
+        if (ExifAnalysisResult.Contains("Обнаружена программа для редактирования фото") || ExifAnalysisResult.Contains("Дата создания и дата изменения не совпадают"))
+            _isExifAnalysisDetected = true;
     }
 
     private void CnnAnalysis()
     {
+        /*
         var result = _analyzerService.NeuralNetworkMethod(PathToOriginal);
         _fakeChance = Convert.ToDecimal(result.Replace('.', ','));
-
-        ElaAnalysisResult = $"Нейросеть считает, что это изображение могло быть подделано с шансом {result}%.";
+        //ElaAnalysisResult = $"Нейросеть считает, что это изображение могло быть подделано с шансом {result}%.";
+        */
+        ElaAnalysisResult = "Анализ нейросети не настроен.";
     }
 
     // TODO: нужно учитывать анализ метаданных
     private void Conclusion()
     {
-        if (_fakeChance > 70)
+        if (_fakeChance > 70 || _isExifAnalysisDetected)
         {
-            FinalAnalysisResult = "Вывод: Изображение было подделано.";
+            FinalAnalysisResult = "Вывод: изображение было подделано.";
         }
         else
         {
-            FinalAnalysisResult = "N/A";
+            FinalAnalysisResult = "Вывод: изображение оригинальное.";
         }
     }
 
-    private void ClearFields() => 
-		PathToResavedOrig = PathToEla = MetadataText = ExifAnalysisResult = ElaAnalysisResult = FinalAnalysisResult 
+    private void ClearFields()
+    {
+        _isExifAnalysisDetected = false;
+        _fakeChance = 0;
+        PathToResavedOrig = PathToEla = MetadataText = ExifAnalysisResult = ElaAnalysisResult = FinalAnalysisResult
             = string.Empty;
+    }
+		
 }

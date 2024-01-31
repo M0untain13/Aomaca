@@ -1,0 +1,15 @@
+import sys, exif, ela, cnn
+
+
+def Main():
+    scriptName = sys.argv[1]
+    if scriptName == 'ela':
+        ela.CreateElaImage(sys.argv[2], int(sys.argv[3]))
+    elif scriptName == 'exif':
+        exif.CreateMetadataFile(sys.argv[2])
+    elif scriptName == 'cnn':
+        cnn.CreateFileWithAnswer(sys.argv[2])
+    
+
+if __name__ == "__main__":
+    Main()

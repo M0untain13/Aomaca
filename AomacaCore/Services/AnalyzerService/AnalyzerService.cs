@@ -85,6 +85,7 @@ public class AnalyzerService : IAnalyzerService
         using var process = Process.Start(info);
         process?.WaitForExit();
 
+        // Это для дебаггинга TODO: потом убрать
         using var reader = process?.StandardError;
         var result = reader?.ReadToEnd();
     }
