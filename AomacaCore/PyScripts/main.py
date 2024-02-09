@@ -8,7 +8,7 @@ def Main():
     elif scriptName == 'exif':
         exif.CreateMetadataFile(sys.argv[2])
     elif scriptName == 'cnn':
-        cnn.CreateFileWithAnswer(sys.argv[2])
+        cnn.PrintResult(sys.argv[2])
     
 
 if __name__ == "__main__":
