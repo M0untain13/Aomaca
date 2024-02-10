@@ -30,6 +30,7 @@ def predict_result(path):
 def PrintResult(path):
     (prediction, confidence) = predict_result(path)
     print(f'{prediction}||{confidence}')
+    input()
 
 
 if __name__ == '__main__':

@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="if not exist $(TargetDir)PyScripts mkdir $(TargetDir)PyScripts&#xD;&#xA;copy $(SolutionDir)AomacaCore\PyScripts\main.exe $(TargetDir)PyScripts\main.exe" />
+    <Exec Command="if not exist $(TargetDir)PyScripts mkdir $(TargetDir)PyScripts&#xD;&#xA;copy $(SolutionDir)AomacaCore\PyScripts\main.exe $(TargetDir)PyScripts\main.exe&#xD;&#xA;copy $(SolutionDir)AomacaCore\PyScripts\trained_model.h5 $(TargetDir)PyScripts\trained_model.h5" />
   </Target>
 
 </Project>

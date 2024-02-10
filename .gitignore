@@ -364,3 +364,5 @@ FodyWeavers.xsd
 /AomacaCore/PyScripts/.idea
 /AomacaCore/PyScripts/.venv
 /AomacaCore/PyScripts/main.dist
+/AomacaCore/PyScripts/main.build
+/AomacaCore/PyScripts/main.onefile-build
