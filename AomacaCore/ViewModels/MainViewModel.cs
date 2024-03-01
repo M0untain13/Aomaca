@@ -1,4 +1,5 @@
-﻿using MvvmCross.Commands;
+﻿using AomacaCore.Models;
+using MvvmCross.Commands;
 using MvvmCross.ViewModels;
 using AomacaCore.Services.AnalyzerService;
 using MvvmCross.Navigation;
@@ -24,89 +25,63 @@ public class MainViewModel : MvxViewModel
 {
     private readonly IAnalyzerService _analyzerService;
 
-    #region Данные
+    #region Пути
 
-    #region Путь до исходного изображения
+    private Paths _paths;
 
-    private string _pathToOriginal = string.Empty;
 	public string PathToOriginal
 	{
-		get => _pathToOriginal;
-		set => SetProperty(ref _pathToOriginal, value);
+		get => _paths.pathToOriginal;
+		set => SetProperty(ref _paths.pathToOriginal, value);
     }
 
-    #endregion
-
-    #region Путь до сохраннёного оригинала
-
-    private string _pathToResavedOrig = string.Empty;
     public string PathToResavedOrig
     {
-        get => _pathToResavedOrig;
-        set => SetProperty(ref _pathToResavedOrig, value);
+        get => _paths.pathToResavedOrig;
+        set => SetProperty(ref _paths.pathToResavedOrig, value);
     }
 
-    #endregion
-
-    #region Путь до ELA изображения
-
-    private string _pathToEla = string.Empty;
 	public string PathToEla
 	{
-		get => _pathToEla;
-		private set => SetProperty(ref _pathToEla, value);
-	}
-
-	#endregion
-
-	#region Метаданные
-
-	private string _metadataText = string.Empty;
-	public string MetadataText
-	{
-		get => _metadataText;
-		private set => SetProperty(ref _metadataText, value);
+		get => _paths.pathToEla;
+		private set => SetProperty(ref _paths.pathToEla, value);
 	}
 
     #endregion
 
-    #region Анализ
+    #region Текстовые поля
 
-    #region Текстовые выводы
+    private TextFields _textFields;
 
-    private string _exifAnalysisResult = string.Empty;
+    public string MetadataText
+    {
+        get => _textFields.metadata;
+        private set => SetProperty(ref _textFields.metadata, value);
+    }
+
     public string ExifAnalysisResult
     {
-        get => _exifAnalysisResult;
-        private set => SetProperty(ref _exifAnalysisResult, value);
+        get => _textFields.exifAnalysis;
+        private set => SetProperty(ref _textFields.exifAnalysis, value);
     }
 
-    private string _elaAnalysisResult = string.Empty;
     public string ElaAnalysisResult
     {
-        get => _elaAnalysisResult;
-        private set => SetProperty(ref _elaAnalysisResult, value);
+        get => _textFields.elaCnnAnalysis;
+        private set => SetProperty(ref _textFields.elaCnnAnalysis, value);
     }
 
-    private string _finalAnalysisResult = string.Empty;
     public string FinalAnalysisResult
     {
-        get => _finalAnalysisResult;
-        private set => SetProperty(ref _finalAnalysisResult, value);
+        get => _textFields.finalAnalysis;
+        private set => SetProperty(ref _textFields.finalAnalysis, value);
     }
 
     #endregion
 
     #region Результаты
 
-    private decimal _fakeChance = 0.00M;
-
-    // TODO: нужно отметить обнаружение признаков редактирования в метаданных
-    private bool _metadataFeaturesDetected;
-
-    #endregion
-
-    #endregion
+    private Results _results;
 
     #endregion
 
@@ -131,8 +106,7 @@ public class MainViewModel : MvxViewModel
 
     private bool
         _isSignal,
-        _isCancel,
-        _isExifAnalysisDetected;
+        _isCancel;
 
     private readonly string _scriptDir = "PyScripts";
 
@@ -255,14 +229,14 @@ public class MainViewModel : MvxViewModel
         MetadataText = exifResult[0];
         ExifAnalysisResult = exifResult[1];
         if (ExifAnalysisResult.Contains("Обнаружена программа для редактирования фото") || ExifAnalysisResult.Contains("Дата создания и дата изменения не совпадают"))
-            _isExifAnalysisDetected = true;
+            _results.metadataFeaturesDetected = true;
     }
 
     private void CnnAnalysis()
     {
         /*
         var result = _analyzerService.NeuralNetworkMethod(PathToOriginal);
-        _fakeChance = Convert.ToDecimal(result.Replace('.', ','));
+        _results.cnnAnswer = Convert.ToDecimal(result.Replace('.', ','));
         //ElaAnalysisResult = $"Нейросеть считает, что это изображение могло быть подделано с шансом {result}%.";
         */
         ElaAnalysisResult = "Анализ нейросети не настроен.";
@@ -270,7 +244,7 @@ public class MainViewModel : MvxViewModel
 
     private void Conclusion()
     {
-        if (_fakeChance > 70 || _isExifAnalysisDetected)
+        if (_results.cnnAnswer > 70 || _results.metadataFeaturesDetected)
         {
             FinalAnalysisResult = "Вывод: изображение было подделано.";
         }
@@ -282,8 +256,8 @@ public class MainViewModel : MvxViewModel
 
     private void ClearFields()
     {
-        _isExifAnalysisDetected = false;
-        _fakeChance = 0;
+        _results.metadataFeaturesDetected = false;
+        _results.cnnAnswer = 0;
         PathToResavedOrig = PathToEla = MetadataText = ExifAnalysisResult = ElaAnalysisResult = FinalAnalysisResult
             = string.Empty;
     }
