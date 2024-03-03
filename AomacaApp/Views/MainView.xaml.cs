@@ -32,7 +32,7 @@ public partial class MainView : MvxWpfView
         }
     }
 
-    private void ResavedOrig_MouseUp_Open(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    private void Orig_MouseUp_Open(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
         if (DataContext is MainViewModel viewModel && viewModel.PathToResavedOrig != "")
             Process.Start("explorer.exe", viewModel.PathToResavedOrig);

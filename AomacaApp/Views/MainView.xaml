@@ -45,7 +45,7 @@
                             <TextBlock Text="Изображение"/>
                         </GroupBox>
 					</GroupBox.Header>
-					<Image Source="{Binding Path=PathToOriginal, Converter={StaticResource bmcon}}" MouseUp="ResavedOrig_MouseUp_Open"/>
+					<Image Source="{Binding Path=PathToOriginal, Converter={StaticResource bmcon}}" MouseUp="Orig_MouseUp_Open"/>
 				</GroupBox>
 				<GridSplitter Grid.Row="1" ResizeDirection="Rows"/>
 				<!-- Артефакты сжатия -->
