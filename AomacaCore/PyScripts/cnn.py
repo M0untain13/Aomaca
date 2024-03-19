@@ -1,6 +1,5 @@
 import sys
 import numpy as np
-from keras.models import load_model
 from PIL import Image
 
 
@@ -11,6 +10,7 @@ def PrepareImage(path: str) -> np.ndarray:
 
 
 def PredictResult(path: str) -> float:
+    from keras.models import load_model
     model = load_model("trained_model.h5")
 
     image = PrepareImage(path)
@@ -18,7 +18,7 @@ def PredictResult(path: str) -> float:
 
     y_pred = model.predict(image)
 
-    return y_pred[0][0]
+    return round(1 - y_pred[0][0], 3)
 
 
 def Main(args: dir) -> None:
@@ -26,7 +26,7 @@ def Main(args: dir) -> None:
         print('Необходим параметр: путь к изображению.')
     else:
         filePath = args[1]
-        prediction, confidence = PredictResult(filePath)
+        prediction = PredictResult(filePath)
         print(f'{prediction}')
 
 

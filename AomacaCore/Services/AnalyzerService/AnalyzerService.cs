@@ -51,7 +51,7 @@ public class AnalyzerService : IAnalyzerService
 
 	public string NeuralNetworkMethod(string path)
 	{
-		var result = RunCmd("cnn\cnn.exe", $"\"{path}\"");
+		var result = RunCmd(@"cnn\cnn.exe", $"\"{path}\"");
 
         return result;
 	}
@@ -66,7 +66,7 @@ public class AnalyzerService : IAnalyzerService
 		var info = new ProcessStartInfo
 		{
 			// TODO: мне кажется, надо вынести все пути в файл конфигурации
-			FileName = @$"{scriptDir}\{scriptName}",
+			FileName = @$"{scriptDir}\{scriptPath}",
 			Arguments = args,
 			UseShellExecute = false,
 			CreateNoWindow = true,

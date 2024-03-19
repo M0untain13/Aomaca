@@ -24,29 +24,33 @@ def AnalyzeImage(path: str) -> str:
     ]
     metadata = GetMetadata(path)
 
-    for program in programs:
-        if program.lower() in metadata['Software'].lower():
-            metadata['SoftwareAnalysis'] = 'Обнаружена программа для редактирования фото.||1'
-            break
-
-    if 'SoftwareAnalysis' not in metadata:
-        metadata['SoftwareAnalysis'] = 'Программа для редактирования фото не обнаружена.||0'
-
-    if metadata['DateTimeOriginal']:
-        if metadata['DateTime']:
-            if metadata['DateTimeOriginal'] != metadata['DateTime']:
-                metadata['DateTimeAnalysis'] = 'Дата создания и дата изменения не совпадают.||1'
-            else:
-                metadata['DateTimeAnalysis'] = 'Дата создания и дата изменения совпадают.||0'
-        else:
-            metadata['DateTimeAnalysis'] = 'Дата изменения не обнаружена.||0'
-    else:
-        metadata['DateTimeAnalysis'] = 'Дата создания не обнаружена.||0'
-
     result = ''
-    for key in metadata:
-        result += f'{key}||{metadata[key]}\n'
+    if len(metadata) == 0:
+        result += 'Error||Метаданные не обнаружены.'
+    else:
+        if 'Software' in metadata:
+            for program in programs:
+                if program.lower() in metadata['Software'].lower():
+                    metadata['SoftwareAnalysis'] = 'Обнаружена программа для редактирования фото.||1'
+                    break
+            if 'SoftwareAnalysis' not in metadata:
+                metadata['SoftwareAnalysis'] = 'Программа для редактирования фото не обнаружена.||0'
+        else:
+            metadata['SoftwareAnalysis'] = 'Данные о программе отсутствуют.||0'
 
+        if 'DateTimeOriginal' in metadata:
+            if 'DateTime' in metadata:
+                if metadata['DateTimeOriginal'] != metadata['DateTime']:
+                    metadata['DateTimeAnalysis'] = 'Дата создания и дата изменения не совпадают.||1'
+                else:
+                    metadata['DateTimeAnalysis'] = 'Дата создания и дата изменения совпадают.||0'
+            else:
+                metadata['DateTimeAnalysis'] = 'Дата изменения не обнаружена.||0'
+        else:
+            metadata['DateTimeAnalysis'] = 'Дата создания не обнаружена.||0'
+    
+        for key in metadata:
+            result += f'{key}||{metadata[key]}\n'
     return result
 
 
