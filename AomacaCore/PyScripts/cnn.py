@@ -4,34 +4,31 @@ from keras.models import load_model
 from PIL import Image
 
 
-def prepare_image(path):
+def PrepareImage(path: str) -> np.ndarray:
     file = Image.open(path).convert("RGB")
-    image_size = (128, 128)
-    return np.array(file.resize(image_size)).flatten() / 255.0
+    imageSize = (128, 128)
+    return np.array(file.resize(imageSize)).flatten() / 255.0
 
 
-def predict_result(path):
-    model = load_model("trained_model.h5")  # load the trained model
-    class_names = ["Forged", "Authentic"]  # classification outputs
-    test_image = prepare_image(path)
-    test_image = test_image.reshape(-1, 128, 128, 3)
+def PredictResult(path: str) -> float:
+    model = load_model("trained_model.h5")
 
-    y_pred = model.predict(test_image)
-    y_pred_class = round(y_pred[0][0])
+    image = PrepareImage(path)
+    image = image.reshape(-1, 128, 128, 3)
 
-    prediction = class_names[y_pred_class]
-    if y_pred <= 0.5:
-        confidence = f"{(1-(y_pred[0][0])) * 100:0.2f}"
+    y_pred = model.predict(image)
+
+    return y_pred[0][0]
+
+
+def Main(args: dir) -> None:
+    if len(args) < 2:
+        print('Необходим параметр: путь к изображению.')
     else:
-        confidence = f"{(y_pred[0][0]) * 100:0.2f}"
-    return prediction, confidence
-
-
-def PrintResult(path):
-    (prediction, confidence) = predict_result(path)
-    print(f'{confidence}')
+        filePath = args[1]
+        prediction, confidence = PredictResult(filePath)
+        print(f'{prediction}')
 
 
 if __name__ == '__main__':
-    file_path = sys.argv[1]
-    PrintResult(file_path)
+    Main(sys.argv)

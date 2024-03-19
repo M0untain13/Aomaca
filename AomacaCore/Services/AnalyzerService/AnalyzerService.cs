@@ -8,7 +8,7 @@ public class AnalyzerService : IAnalyzerService
 {
 	public string ExifMethod(string path)
 	{
-		var lines = RunCmd($"exif \"{path}\"").Split('\n');
+		var lines = RunCmd("exif.exe", $"\"{path}\"").Split('\n');
 		var metadata = new Dictionary<string, string>();
 		foreach (var line in lines)
 		{
@@ -44,14 +44,14 @@ public class AnalyzerService : IAnalyzerService
 
 	public string ElaMethod(string path)
 	{
-		RunCmd( $"ela \"{path}\" 100");
+		RunCmd("ela.exe", $"\"{path}\" 100");
 
 		return @$"{filesDir}\resaved_image.jpg {filesDir}\ela_image.png";
 	}
 
 	public string NeuralNetworkMethod(string path)
 	{
-		var result = RunCmd($"cnn \"{path}\"");
+		var result = RunCmd("cnn\cnn.exe", $"\"{path}\"");
 
         return result;
 	}
@@ -61,12 +61,12 @@ public class AnalyzerService : IAnalyzerService
 	// Где лежат скрипты
 	private const string scriptDir = "PyScripts";
 
-	private string RunCmd(string args)
+	private string RunCmd(string scriptPath, string args)
 	{
 		var info = new ProcessStartInfo
 		{
 			// TODO: мне кажется, надо вынести все пути в файл конфигурации
-			FileName = @$"{scriptDir}\main.exe",
+			FileName = @$"{scriptDir}\{scriptName}",
 			Arguments = args,
 			UseShellExecute = false,
 			CreateNoWindow = true,

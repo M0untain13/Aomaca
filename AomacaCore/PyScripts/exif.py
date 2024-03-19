@@ -3,69 +3,61 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 
 
-def CreateMetadataFile(path):
-    texts = {'SoftDetected': 'Обнаружена программа для редактирования фото.',
-             'SoftNotDetected': 'Название устройства или ПО отсутствует.',
-             'DateTimeNotDetected': 'отсутствует.',
-             'DateDiffDetected': 'Дата создания и дата изменения не совпадают.',
-             'Error': 'Метаданные не обнаружены.'
-             }
+def GetMetadata(path: str) -> dict:
+    imageFile = Image.open(path)
+    info = imageFile._getexif()
+    necessaryTags = ['Software', 'DateTimeOriginal', 'DateTime']
+    metadata = {}
+    if info:
+        for (tag, value) in info.items():
+            tagName = TAGS.get(tag, tag)
+            if tagName in necessaryTags:
+                metadata[tagName] = value
+    return metadata
+
+
+def AnalyzeImage(path: str) -> str:
     programs = [
         'Photoshop', 'GIMP', 'PhotoScape', 'Photoscape', 'PixBuilder', 'openCanvas',
         'Artweaver', 'Editor', 'Krita', 'Picasa', 'Fotor', 'ФотоМАСТЕР', 'Фотомастер',
         'Paint.NET', 'Pixlr', 'ACDSee', 'CorelDRAW', 'Фотостудия', 'Paint', 'Polarr'
     ]
-    metaData = {}
-    result = {}
-    image_file = Image.open(path)
-    info = image_file._getexif()  # Достаём метаданные из фото
-    if info:
-        for (tag, value) in info.items():
-            tagname = TAGS.get(tag, tag)
-            metaData[tagname] = value
+    metadata = GetMetadata(path)
 
-        if 'Software' in metaData:  # Анализируем программное обеспечение
-            result['Software'] = metaData['Software']
-            for program in programs:
-                program = program.lower()
-                if program in result['Software'].lower():
-                    result['SoftDetected'] = texts['SoftDetected']
-                    break
+    for program in programs:
+        if program.lower() in metadata['Software'].lower():
+            metadata['SoftwareAnalysis'] = 'Обнаружена программа для редактирования фото.||1'
+            break
+
+    if 'SoftwareAnalysis' not in metadata:
+        metadata['SoftwareAnalysis'] = 'Программа для редактирования фото не обнаружена.||0'
+
+    if metadata['DateTimeOriginal']:
+        if metadata['DateTime']:
+            if metadata['DateTimeOriginal'] != metadata['DateTime']:
+                metadata['DateTimeAnalysis'] = 'Дата создания и дата изменения не совпадают.||1'
+            else:
+                metadata['DateTimeAnalysis'] = 'Дата создания и дата изменения совпадают.||0'
         else:
-            result['Software'] = texts['SoftNotDetected']
-
-        if 'DateTimeOriginal' in metaData:  # Анализируем дату создания и дату изменения
-            result['DateTimeOriginal'] = metaData['DateTimeOriginal']
-        else:
-            result['DateTimeOriginal'] = texts['DateTimeNotDetected']
-
-        if 'DateTime' in metaData:
-            result['DateTime'] = metaData['DateTime']
-        else:
-            result['DateTime'] = texts['DateTimeNotDetected']
-
-        if result['DateTimeOriginal'] != texts['DateTimeNotDetected'] \
-                and result['DateTime'] != texts['DateTimeNotDetected'] \
-                and result['DateTimeOriginal'] != result['DateTime']:
-            result['DateDiffDetected'] = texts['DateDiffDetected']
+            metadata['DateTimeAnalysis'] = 'Дата изменения не обнаружена.||0'
     else:
-        result['Error'] = texts['Error']
+        metadata['DateTimeAnalysis'] = 'Дата создания не обнаружена.||0'
 
-    string = ''
+    result = ''
+    for key in metadata:
+        result += f'{key}||{metadata[key]}\n'
 
-    if 'Software' in result.keys():
-        result['Software'] = 'ПО: ' + result['Software']
-    if 'DateTimeOriginal' in result.keys():
-        result['DateTimeOriginal'] = 'Дата создания: ' + result['DateTimeOriginal']
-    if 'DateTime' in result.keys():
-        result['DateTime'] = 'Дата изменения: ' + result['DateTime']
+    return result
 
-    for key in result:
-        string += f'{key}||{result[key]}\n'
 
-    print(string)
+def Main(args: dir) -> None:
+    if len(args) < 2:
+        print('Необходим параметр: путь к изображению.')
+    else:
+        filePath = args[1]
+        result = AnalyzeImage(filePath)
+        print(result)
 
 
 if __name__ == "__main__":
-    file_path = sys.argv[1]
-    CreateMetadataFile(file_path)
+    Main(sys.argv)

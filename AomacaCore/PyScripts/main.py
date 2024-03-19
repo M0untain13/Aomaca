@@ -2,6 +2,8 @@ import sys, exif, ela, cnn
 
 
 def Main():
+    print('Obsolete script!')
+    return
     scriptName = sys.argv[1]
     if scriptName == 'ela':
         ela.CreateElaImage(sys.argv[2], int(sys.argv[3]))
