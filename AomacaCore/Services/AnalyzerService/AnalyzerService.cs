@@ -8,6 +8,7 @@ public class AnalyzerService : IAnalyzerService
 {
 	public string ExifMethod(string path)
 	{
+        // TODO: надо переделать метод
 		var lines = RunCmd("exif.exe", $"\"{path}\"").Split('\n');
 		var metadata = new Dictionary<string, string>();
 		foreach (var line in lines)

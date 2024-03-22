@@ -21,6 +21,10 @@ namespace AomacaCore.ViewModels;
 
 //TODO: привести интерфейс к нормальному виду
 
+//TODO: надо создать питоновский файл для обучения нейросети
+
+//TODO: надо протестировать ml.net c .onnx моделью
+
 public class MainViewModel : MvxViewModel
 {
     private readonly IAnalyzerService _analyzerService;

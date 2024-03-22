@@ -10,6 +10,7 @@ def PrepareImage(path: str) -> np.ndarray:
 
 
 def PredictResult(path: str) -> float:
+    # Эту библиотеки импортирую только тут, т.к. она долго загружается
     from keras.models import load_model
     model = load_model("trained_model.h5")
 
