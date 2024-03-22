@@ -21,7 +21,7 @@ def PredictResult(path: str) -> float:
     return round(1 - y_pred[0][0], 3)
 
 
-def Main(args: dir) -> None:
+def Main(args: list) -> None:
     if len(args) < 2:
         print('Необходим параметр: путь к изображению.')
     else:

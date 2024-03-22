@@ -54,7 +54,7 @@ def AnalyzeImage(path: str) -> str:
     return result
 
 
-def Main(args: dir) -> None:
+def Main(args: list) -> None:
     if len(args) < 2:
         print('Необходим параметр: путь к изображению.')
     else:

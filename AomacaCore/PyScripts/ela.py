@@ -23,7 +23,7 @@ def CreateElaImage(path: str, quality: int) -> None:
     elaImage.save(elaFilePath)
 
 
-def Main(args: dir) -> None:
+def Main(args: list) -> None:
     if len(args) < 2:
         print('Необходим параметр: путь к изображению.')
     else:
