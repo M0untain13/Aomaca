@@ -112,7 +112,7 @@ public class MainViewModel : MvxViewModel
         _isSignal,
         _isCancel;
 
-    private readonly string _scriptDir = "PyScripts";
+    private readonly string _scriptDir = "PyFiles";
 
     public void AnalysisStart()
     {

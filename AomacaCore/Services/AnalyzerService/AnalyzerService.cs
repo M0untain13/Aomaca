@@ -60,7 +60,7 @@ public class AnalyzerService : IAnalyzerService
 	// Где будут сохранятся файлы
 	private const string filesDir = "Files";
 	// Где лежат скрипты
-	private const string scriptDir = "PyScripts";
+	private const string scriptDir = "PyFiles";
 
 	private string RunCmd(string scriptPath, string args)
 	{
