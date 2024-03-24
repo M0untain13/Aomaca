@@ -8,18 +8,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="PyScripts\main.build\**" />
-    <Compile Remove="PyScripts\main.dist\**" />
-    <Compile Remove="PyScripts\main.onefile-build\**" />
-    <Compile Remove="PyScripts\venv\**" />
-    <EmbeddedResource Remove="PyScripts\main.build\**" />
-    <EmbeddedResource Remove="PyScripts\main.dist\**" />
-    <EmbeddedResource Remove="PyScripts\main.onefile-build\**" />
-    <EmbeddedResource Remove="PyScripts\venv\**" />
-    <None Remove="PyScripts\main.build\**" />
-    <None Remove="PyScripts\main.dist\**" />
-    <None Remove="PyScripts\main.onefile-build\**" />
-    <None Remove="PyScripts\venv\**" />
+    <Compile Remove="PyFiles\main.build\**" />
+    <Compile Remove="PyFiles\main.dist\**" />
+    <Compile Remove="PyFiles\main.onefile-build\**" />
+    <Compile Remove="PyFiles\venv\**" />
+    <EmbeddedResource Remove="PyFiles\main.build\**" />
+    <EmbeddedResource Remove="PyFiles\main.dist\**" />
+    <EmbeddedResource Remove="PyFiles\main.onefile-build\**" />
+    <EmbeddedResource Remove="PyFiles\venv\**" />
+    <None Remove="PyFiles\main.build\**" />
+    <None Remove="PyFiles\main.dist\**" />
+    <None Remove="PyFiles\main.onefile-build\**" />
+    <None Remove="PyFiles\venv\**" />
   </ItemGroup>
 
   <ItemGroup>
