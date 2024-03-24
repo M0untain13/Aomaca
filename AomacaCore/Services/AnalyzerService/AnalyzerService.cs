@@ -8,39 +8,61 @@ public class AnalyzerService : IAnalyzerService
 {
 	public string ExifMethod(string path)
 	{
-        // TODO: надо переделать метод
+		// TODO: надо переделать метод
 		var lines = RunCmd("exif.exe", $"\"{path}\"").Split('\n');
-		var metadata = new Dictionary<string, string>();
-		foreach (var line in lines)
-		{
-			var pair = line.Split("||");
-			if (pair.Length == 2)
-				metadata[pair[0]] = pair[1];
-		}
 
 		var metadataText = "";
-		var exifAnalysisResult = "";
-		var metadataKeys = new[] { "Software", "DateTimeOriginal", "DateTime" };
+		var analysisText = "";
+		var detected = "0";
+		var result = "";
 
-		foreach (var pair in metadata)
+		var dictOfMetadataTypes = new Dictionary<string, string>
 		{
-			if (metadataKeys.Contains(pair.Key))
-			{
-				if (metadataText != "")
-					metadataText += '\n';
-				metadataText += pair.Value;
-			}
-			else
-			{
-				if (exifAnalysisResult != "")
-					exifAnalysisResult += '\n';
-				exifAnalysisResult += pair.Value;
-			}
-		}
-		if (exifAnalysisResult == "")
-			exifAnalysisResult = "В метаданных признаки не обнаружены.";
+			{"Software", "ПО"},
+			{"DateTime", "Дата создания"},
+            {"DateTimeOriginal", "Дата изменения"}
+        };
 
-		return string.Concat(metadataText, "||", exifAnalysisResult);
+		if(lines.Length > 0) 
+		{
+			if (lines[0].Split("||")[0] != "Error")
+			{
+                foreach (var line in lines)
+                {
+                    var data = line.Replace("\r", "").Split("||");
+                    switch (data.Length)
+                    {
+                        case 2:
+                        {
+                            if (metadataText != "")
+                                metadataText += "\n";
+
+                            var type = dictOfMetadataTypes[data[0]];
+                            var text = data[1];
+                            metadataText += $"{type}: {text}";
+                            break;
+                        }
+                        case 3:
+                        {
+                            if (analysisText != "")
+                                analysisText += "\n";
+
+                            analysisText += data[1];
+
+                            if (detected != "1" && data[2] == "1")
+                                detected = "1";
+                            break;
+                        }
+                    }
+                }
+                result = string.Concat(metadataText, "||", analysisText, "||", detected);
+            }
+        }
+
+		if (result == "")
+			result = "Метаданные не обнаружены.||Метаданные не обнаружены.||0";
+
+		return result;
 	}
 
 	public string ElaMethod(string path)
