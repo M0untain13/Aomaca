@@ -2,5 +2,7 @@
 
 public interface ISavingService
 {
-    void Save(string[] texts, string[]? paths = null);
+    string Save(string[] texts, string[]? paths = null);
+
+    void Zip(string[] paths);
 }

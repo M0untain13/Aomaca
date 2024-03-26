@@ -19,8 +19,8 @@ public class AnalyzerService : IAnalyzerService
 		var dictOfMetadataTypes = new Dictionary<string, string>
 		{
 			{"Software", "ПО"},
-			{"DateTime", "Дата создания"},
-            {"DateTimeOriginal", "Дата изменения"}
+            {"DateTimeOriginal", "Дата создания"},
+            {"DateTime", "Дата изменения"}
         };
 
 		if(lines.Length > 0) 
@@ -60,7 +60,7 @@ public class AnalyzerService : IAnalyzerService
         }
 
 		if (result == "")
-			result = "Метаданные не обнаружены.||Метаданные не обнаружены.||0";
+			result = "||Метаданные не обнаружены.||0";
 
 		return result;
 	}

@@ -140,6 +140,8 @@ public class MainViewModel : MvxViewModel
 
 	public IMvxAsyncCommand<string> SaveAsyncCommand { get; }
 
+	public IMvxAsyncCommand OpenResultsInExplorerCommand { get; }
+
 	public MainViewModel(IAnalyzerService analyzerService, ISavingService savingService)
 	{
 		_analyzerService = analyzerService;
@@ -159,11 +161,23 @@ public class MainViewModel : MvxViewModel
 			}
 		});
 
-        #endregion
+		#endregion
 
-        #region Инициализация команд
+		#region Инициализация команд
 
-        SaveAsyncCommand = new MvxAsyncCommand<string>(selectedSaving => 
+		OpenResultsInExplorerCommand = new MvxAsyncCommand(() =>
+		{
+			return Task.Run(() =>
+			{
+                var path = @$"{System.IO.Path.GetDirectoryName(Environment.ProcessPath)}\SavedResults"; 
+                
+				var arguments = $"/open, \"{path}\"";
+
+                System.Diagnostics.Process.Start("explorer.exe", arguments);
+            });
+		});
+
+                SaveAsyncCommand = new MvxAsyncCommand<string>(selectedSaving => 
         {
             return Task.Run(() =>
             {
@@ -174,12 +188,12 @@ public class MainViewModel : MvxViewModel
                         StatusText = "Будут сохранены изображения и текст.";
 						// TODO: С путем к оригинальному изображению нужно будет быть по-аккуратнее, т.к. приложение не удерживает изображение, т.е. его могут удалить или переместить
                         var paths = new[] { _paths.pathToOriginal, _paths.pathToEla };
-						_savingService.Save(texts, paths);
+                        _savingService.Zip(new[] { _savingService.Save(texts, paths) });
                         StatusText = "Изображения и текст сохранены!";
                         break;
 					case "TextOnly":
                         StatusText = "Будет сохранен только текст.";
-						_savingService.Save(texts);
+                        _savingService.Zip(new[] { _savingService.Save(texts) });
                         StatusText = "Текст сохранен!";
                         break;
                 }
@@ -198,19 +212,29 @@ public class MainViewModel : MvxViewModel
 
                 var isZipMode = _imagePaths.Length > 1;
 
+                var pathsForZip = new List<string>();
+
                 if (!_isCancel)
                 {
                     foreach (var path in _imagePaths)
                     {
                         PathToOriginal = path;
                         StartAnalysis();
+
                         if (isZipMode)
                         {
-                            SaveAsyncCommand.Execute("TextOnly");
+                            var texts = new[] { _paths.pathToOriginal, _textFields.metadata, _textFields.exifAnalysis, _textFields.elaCnnAnalysis, _textFields.finalAnalysis };
+                            var paths = new[] { _paths.pathToOriginal, _paths.pathToEla };
+							pathsForZip.Add(_savingService.Save(texts, paths));
                         }
                     }
                 }
 
+                if (isZipMode)
+				{
+                    _savingService.Zip(pathsForZip.ToArray());
+                    pathsForZip.Clear();
+                }
 
                 IsDone = true;
                 _isCancel = false;

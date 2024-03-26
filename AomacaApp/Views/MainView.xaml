@@ -22,7 +22,8 @@
                     <MenuItem Header="Только текст" Command="{Binding Path=SaveAsyncCommand}" CommandParameter="TextOnly"/>
                 </MenuItem>
             </Menu>
-			<Button Content="Помощь" Click="HelpButtonClick"/>
+            <Button Content="Сохранённые результаты" Command="{Binding Path=OpenResultsInExplorerCommand}"/>
+            <Button Content="Помощь" Click="HelpButtonClick"/>
 		</StatusBar>
 		<StatusBar DockPanel.Dock="Bottom">
 			<StatusBarItem>
