@@ -19,7 +19,7 @@
 			<Menu>
                 <MenuItem Header="Сохранить...">
                     <MenuItem Header="Изображения и текст" Command="{Binding Path=SaveAsyncCommand}" CommandParameter="All"/>
-                    <MenuItem Header="Только текст" Command="{Binding Path=SaveAsyncCommand}" CommandParameter="OnlyText"/>
+                    <MenuItem Header="Только текст" Command="{Binding Path=SaveAsyncCommand}" CommandParameter="TextOnly"/>
                 </MenuItem>
             </Menu>
 			<Button Content="Помощь" Click="HelpButtonClick"/>

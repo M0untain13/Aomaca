@@ -116,8 +116,7 @@ public class MainViewModel : MvxViewModel
 
 	private bool
 		_isSignal,
-		_isCancel,
-		_isZipMode;
+		_isCancel;
 
 	public bool IsDone { get; private set; }
 
@@ -128,8 +127,6 @@ public class MainViewModel : MvxViewModel
 	public void AnalysisStart(string[] paths)
 	{
 		_imagePaths = paths;
-		if (paths.Length > 1)
-			_isZipMode = true;
         _isSignal = true;
 	}
 
@@ -180,9 +177,10 @@ public class MainViewModel : MvxViewModel
 						_savingService.Save(texts, paths);
                         StatusText = "Изображения и текст сохранены!";
                         break;
-					case "OnlyText":
-                        StatusText = "Текст сохранен!";
+					case "TextOnly":
+                        StatusText = "Будет сохранен только текст.";
 						_savingService.Save(texts);
+                        StatusText = "Текст сохранен!";
                         break;
                 }
             });
@@ -191,13 +189,14 @@ public class MainViewModel : MvxViewModel
         AnalysisAsyncCommand = new MvxAsyncCommand(() =>
 		{
 			return Task.Run(() =>
-			{
-				IsDone = false;
+            {
+                IsDone = false;
 
-				while (!_isSignal)
-					Thread.Sleep(250);
-				_isSignal = false;
+                while (!_isSignal)
+                    Thread.Sleep(250);
+                _isSignal = false;
 
+                var isZipMode = _imagePaths.Length > 1;
 
                 if (!_isCancel)
                 {
@@ -205,24 +204,27 @@ public class MainViewModel : MvxViewModel
                     {
                         PathToOriginal = path;
                         StartAnalysis();
-                        // TODO: тут нужно сделать сохранение в архив, если активирован ZipMode
+                        if (isZipMode)
+                        {
+                            SaveAsyncCommand.Execute("TextOnly");
+                        }
                     }
                 }
 
 
                 IsDone = true;
-				_isCancel = false;
+                _isCancel = false;
 
-				if (_isZipMode)
-				{
-					ClearFields();
-					ClearFilesDir();
+                if (isZipMode)
+                {
+                    ClearFields();
+                    ClearFilesDir();
                     PathToOriginal = "";
                     var dirPath = Path.GetDirectoryName(_imagePaths[0]);
-					// TODO: тут почему-то иногда запрещается удаление временной папки
+                    // TODO: тут почему-то иногда запрещается удаление временной папки
                     Directory.Delete(dirPath, true);
                 }
-			});
+            });
 		});
 
 		#endregion
