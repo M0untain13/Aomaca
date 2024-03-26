@@ -56,8 +56,6 @@ public partial class MainView : MvxWpfView
 
 						break;
 				}
-
-				viewModel.AnalysisCancel();
 			});
 		}
 		else
