@@ -31,5 +31,11 @@
         <Setter Property="BorderBrush" Value="{StaticResource Back3}"/>
         <Setter Property="BorderThickness" Value="2"/>
     </Style>
+
+    <Style TargetType="MenuItem">
+        <Setter Property="Background" Value="{StaticResource Back1}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource Back3}"/>
+        <Setter Property="BorderThickness" Value="1,2,2,1"/>
+    </Style>
     
 </ResourceDictionary>
