@@ -45,9 +45,9 @@ public partial class MainView : MvxWpfView
 						break;
 					case ".zip":
 						var zipFilePath = openFileDialog.FileName;
-						var extractFolderPath = Path.GetDirectoryName(zipFilePath) + "\\TempUnzip";
+						var extractFolderPath = Path.GetDirectoryName(zipFilePath) + "\\TempUnzip_" + DateTime.Now.ToString("HH-mm-ss");
 						Directory.CreateDirectory(extractFolderPath);
-						ZipFile.ExtractToDirectory(zipFilePath, extractFolderPath);
+                        ZipFile.ExtractToDirectory(zipFilePath, extractFolderPath);
 						var filesPathList = Directory.GetFiles(extractFolderPath, "*", SearchOption.AllDirectories);
 						viewModel.AnalysisStart(filesPathList);
 

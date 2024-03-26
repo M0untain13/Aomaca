@@ -18,8 +18,13 @@ def GetMetadata(path: str) -> dict:
         d = datetime.strptime(date, "%Y:%m:%d %H:%M:%S")
         return d.strftime("%H:%M:%S %d.%m.%Y")
 
-    # Следующая строчка нужна лишь для порядка, т.к. внутри файла метаданные расположены в другом порядке
-    return {'Software': metadata['Software'], 'DateTimeOriginal': Format(metadata['DateTimeOriginal']), 'DateTime': Format(metadata['DateTime'])}
+    # Следующие строчки нужны лишь для порядка, т.к. внутри файла метаданные расположены в другом порядке
+    result = {}
+    for tag in necessaryTags:
+        if tag in metadata:
+            result[tag] = metadata[tag]
+            
+    return result
 
 
 def AnalyzeImage(path: str) -> str:
