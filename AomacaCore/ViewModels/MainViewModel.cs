@@ -33,6 +33,8 @@ namespace AomacaCore.ViewModels;
 
 //TODO: нужно запретить нажатие кнопки сохранения, если сохранять нечего или изображение в процессе анализа
 
+//TODO: не забудь сделать форматирование даты в exif.py
+
 public class MainViewModel : MvxViewModel
 {
 	private readonly IAnalyzerService _analyzerService;
