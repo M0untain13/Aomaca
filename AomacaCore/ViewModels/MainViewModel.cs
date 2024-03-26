@@ -4,6 +4,7 @@ using MvvmCross.ViewModels;
 using AomacaCore.Services.AnalyzerService;
 using MvvmCross.Navigation;
 using System.Runtime.CompilerServices;
+using AomacaCore.Services.SavingService;
 
 namespace AomacaCore.ViewModels;
 
@@ -31,6 +32,8 @@ namespace AomacaCore.ViewModels;
 public class MainViewModel : MvxViewModel
 {
 	private readonly IAnalyzerService _analyzerService;
+
+	private readonly ISavingService _savingService;
 
 	#region Пути
 
@@ -138,13 +141,16 @@ public class MainViewModel : MvxViewModel
 
 	public IMvxAsyncCommand AnalysisAsyncCommand { get; }
 
-	public MainViewModel(IAnalyzerService analyzerService, IMvxNavigationService navigationService)
+	public IMvxAsyncCommand<string> SaveAsyncCommand { get; }
+
+	public MainViewModel(IAnalyzerService analyzerService, ISavingService savingService)
 	{
 		_analyzerService = analyzerService;
+        _savingService = savingService;
 
-		#region Таймер для отчистки статус-бара
+        #region Таймер для отчистки статус-бара
 
-		Task.Run(() =>
+        Task.Run(() =>
 		{
 			while (true)
 			{
@@ -156,11 +162,33 @@ public class MainViewModel : MvxViewModel
 			}
 		});
 
-		#endregion
+        #endregion
 
-		#region Инициализация команд
+        #region Инициализация команд
 
-		AnalysisAsyncCommand = new MvxAsyncCommand(() =>
+        SaveAsyncCommand = new MvxAsyncCommand<string>(selectedSaving => 
+        {
+            return Task.Run(() =>
+            {
+                var texts = new[] { _textFields.metadata, _textFields.exifAnalysis, _textFields.elaCnnAnalysis, _textFields.finalAnalysis };
+                switch (selectedSaving)
+                {
+					case "All":
+                        StatusText = "Будут сохранены изображения и текст.";
+						// TODO: С путем к оригинальному изображению нужно будет быть по-аккуратнее, т.к. приложение не удерживает изображение, т.е. его могут удалить или переместить
+                        var paths = new[] { _paths.pathToOriginal, _paths.pathToEla };
+						_savingService.Save(texts, paths);
+                        StatusText = "Изображения и текст сохранены!";
+                        break;
+					case "OnlyText":
+                        StatusText = "Текст сохранен!";
+						_savingService.Save(texts);
+                        break;
+                }
+            });
+        });
+
+        AnalysisAsyncCommand = new MvxAsyncCommand(() =>
 		{
 			return Task.Run(() =>
 			{

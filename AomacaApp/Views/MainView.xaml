@@ -18,8 +18,8 @@
 			<Button Content="Открыть..." Click="OpenFileButtonClick" Command="{Binding Path=AnalysisAsyncCommand}"/>
 			<Menu>
                 <MenuItem Header="Сохранить...">
-                    <MenuItem Header="Изображения и текст"/>
-                    <MenuItem Header="Только текст"/>
+                    <MenuItem Header="Изображения и текст" Command="{Binding Path=SaveAsyncCommand}" CommandParameter="All"/>
+                    <MenuItem Header="Только текст" Command="{Binding Path=SaveAsyncCommand}" CommandParameter="OnlyText"/>
                 </MenuItem>
             </Menu>
 			<Button Content="Помощь" Click="HelpButtonClick"/>
