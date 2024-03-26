@@ -167,7 +167,7 @@ public class MainViewModel : MvxViewModel
         {
             return Task.Run(() =>
             {
-                var texts = new[] { _textFields.metadata, _textFields.exifAnalysis, _textFields.elaCnnAnalysis, _textFields.finalAnalysis };
+                var texts = new[] { _paths.pathToOriginal, _textFields.metadata, _textFields.exifAnalysis, _textFields.elaCnnAnalysis, _textFields.finalAnalysis };
                 switch (selectedSaving)
                 {
 					case "All":
