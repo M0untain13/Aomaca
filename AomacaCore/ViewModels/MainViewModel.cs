@@ -29,6 +29,10 @@ namespace AomacaCore.ViewModels;
 
 //TODO: реализуй сохранение результатов в виде текстового файла и отдельно в виде архива с изображениями
 
+//TODO: метаданные в формате .tiff не вытягиваются тем методом на питоне
+
+//TODO: нужно запретить нажатие кнопки сохранения, если сохранять нечего или изображение в процессе анализа
+
 public class MainViewModel : MvxViewModel
 {
 	private readonly IAnalyzerService _analyzerService;

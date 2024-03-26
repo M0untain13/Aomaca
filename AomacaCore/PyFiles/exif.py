@@ -1,7 +1,7 @@
 import sys
 from PIL import Image
 from PIL.ExifTags import TAGS
-
+from datetime import datetime
 
 def GetMetadata(path: str) -> dict:
     imageFile = Image.open(path)
@@ -13,7 +13,13 @@ def GetMetadata(path: str) -> dict:
             tagName = TAGS.get(tag, tag)
             if tagName in necessaryTags:
                 metadata[tagName] = value
-    return metadata
+
+    def Format(date: str) -> str:
+        d = datetime.strptime(date, "%Y:%m:%d %H:%M:%S")
+        return d.strftime("%H:%M:%S %d.%m.%Y")
+
+    # Следующая строчка нужна лишь для порядка, т.к. внутри файла метаданные расположены в другом порядке
+    return {'Software': metadata['Software'], 'DateTimeOriginal': Format(metadata['DateTimeOriginal']), 'DateTime': Format(metadata['DateTime'])}
 
 
 def AnalyzeImage(path: str) -> str:
