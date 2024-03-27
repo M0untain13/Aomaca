@@ -1,5 +1,9 @@
 ﻿using System.Diagnostics;
-using System.Text;
+using Microsoft.ML;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Advanced;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace AomacaCore.Services.AnalyzerService;
 
@@ -74,9 +78,40 @@ public class AnalyzerService : IAnalyzerService
 
 	public string NeuralNetworkMethod(string path)
 	{
-		var result = RunCmd(@"cnn\cnn.exe", $"\"{path}\"");
+		double[] data;
 
-        return result;
+		using (var image = Image.Load<Rgb24>(path))
+		{
+            image.Mutate(x => x.Resize(128, 128));
+			var pixelArray = new Rgb24[image.Width * image.Height];
+            image.CopyPixelDataTo(pixelArray);
+			data = new double[pixelArray.Length * 3];
+            for (var i = 0; i < pixelArray.Length; i++)
+			{
+				data[i*3] = pixelArray[i].R;
+				data[i*3 + 1] = pixelArray[i].G;
+				data[i*3 + 2] = pixelArray[i].B;
+            }
+        }
+
+        for (var i = 0; i < data.Length; i++)
+        {
+			data[i] /= 255;
+        }
+
+		// TODO: оказывается в итоге должна получится матрица 1x128x128x3
+		// То есть корневой массив содержит один элементв в виде массива размером 128, который в каждой ячейке содержит еще 128, которые содержат 3 элемента RGB в диапазоне от 0 до 1 
+
+        var mlContext = new MLContext();
+
+		// TODO: при вызове метода вызывается исключение
+        var estimator = mlContext.Transforms.ApplyOnnxModel(@$"{scriptDir}\trained_model.onnx");
+
+        //IDataView dataView = mlContext.Data.LoadFromEnumerable();
+
+        //estimator.Fit()
+
+        return "";
 	}
 
 	// Где будут сохранятся файлы

@@ -331,12 +331,13 @@ public class MainViewModel : MvxViewModel
 
 	private void CnnAnalysis()
 	{
-		/*
-		var result = _analyzerService.NeuralNetworkMethod(PathToOriginal);
+        var result = _analyzerService.NeuralNetworkMethod(PathToEla);
+        /*
+		
 		_results.cnnAnswer = Convert.ToDecimal(result.Replace('.', ','));
 		//ElaAnalysisResult = $"Нейросеть считает, что это изображение могло быть подделано с шансом {result}%.";
 		*/
-		ElaAnalysisResult = "Анализ нейросети не настроен.";
+        ElaAnalysisResult = "Анализ нейросети не настроен.";
 	}
 
 	private void Conclusion()
