@@ -11,27 +11,15 @@ namespace AomacaCore.ViewModels;
 //TODO: Кстати, ты потом прошерсти весь код на шарпе и питоне, чтобы все по красоте было.
 //		(форматирование и проверка на возникновение ошибок)
 
-//TODO: Надо разделить скрипты. Файл с нейросеткой выполняется слишком долго.
-
 //TODO: Добавить установщик
 
-//TODO: не забудь потом добавить ссылку, откуда взял ELA/EXIF скрипты
-
-//TODO: нужно будет добавить функцию сохранения результатов
-
 //TODO: следует вычислить контрольные суммы, когда буду установщик архивировать и кидать на яндекс или гугл диск.
-
-//TODO: привести интерфейс к нормальному виду
 
 //TODO: надо создать питоновский файл для обучения нейросети
 
 //TODO: надо протестировать ml.net c .onnx моделью
 
-//TODO: реализуй сохранение результатов в виде текстового файла и отдельно в виде архива с изображениями
-
 //TODO: метаданные в формате .tiff не вытягиваются тем методом на питоне
-
-//TODO: нужно запретить нажатие кнопки сохранения, если сохранять нечего или изображение в процессе анализа
 
 //TODO: не забудь сделать форматирование даты в exif.py
 
@@ -183,28 +171,31 @@ public class MainViewModel : MvxViewModel
             });
 		});
 
-                SaveAsyncCommand = new MvxAsyncCommand<string>(selectedSaving => 
-        {
-            return Task.Run(() =>
-            {
-                var texts = new[] { _paths.pathToOriginal, _textFields.metadata, _textFields.exifAnalysis, _textFields.elaCnnAnalysis, _textFields.finalAnalysis };
-                switch (selectedSaving)
-                {
+		SaveAsyncCommand = new MvxAsyncCommand<string>(selectedSaving =>
+		{
+			return Task.Run(() =>
+			{
+				if (!IsDone || PathToOriginal == "")
+					return;
+
+				var texts = new[] { _paths.pathToOriginal, _textFields.metadata, _textFields.exifAnalysis, _textFields.elaCnnAnalysis, _textFields.finalAnalysis };
+				switch (selectedSaving)
+				{
 					case "All":
-                        StatusText = "Будут сохранены изображения и текст.";
+						StatusText = "Будут сохранены изображения и текст.";
 						// TODO: С путем к оригинальному изображению нужно будет быть по-аккуратнее, т.к. приложение не удерживает изображение, т.е. его могут удалить или переместить
-                        var paths = new[] { _paths.pathToOriginal, _paths.pathToEla };
-                        _savingService.Zip(new[] { _savingService.Save(texts, paths) });
-                        StatusText = "Изображения и текст сохранены!";
-                        break;
+						var paths = new[] { _paths.pathToOriginal, _paths.pathToEla };
+						_savingService.Zip(new[] { _savingService.Save(texts, paths) });
+						StatusText = "Изображения и текст сохранены!";
+						break;
 					case "TextOnly":
-                        StatusText = "Будет сохранен только текст.";
-                        _savingService.Zip(new[] { _savingService.Save(texts) });
-                        StatusText = "Текст сохранен!";
-                        break;
-                }
-            });
-        });
+						StatusText = "Будет сохранен только текст.";
+						_savingService.Zip(new[] { _savingService.Save(texts) });
+						StatusText = "Текст сохранен!";
+						break;
+				}
+			});
+		});
 
         AnalysisAsyncCommand = new MvxAsyncCommand(() =>
 		{
