@@ -332,17 +332,15 @@ public class MainViewModel : MvxViewModel
 	private void CnnAnalysis()
 	{
         var result = _analyzerService.NeuralNetworkMethod(PathToEla);
-        /*
-		
-		_results.cnnAnswer = Convert.ToDecimal(result.Replace('.', ','));
-		//ElaAnalysisResult = $"Нейросеть считает, что это изображение могло быть подделано с шансом {result}%.";
-		*/
-        ElaAnalysisResult = "Анализ нейросети не настроен.";
-	}
+
+        ElaAnalysisResult = $"Нейросеть считает, что изображение подделано с вероятностью {(int)(Math.Round(result, 2)*100)}%.";
+
+        _results.cnnAnswer = (decimal)result;
+    }
 
 	private void Conclusion()
 	{
-		if (_results.cnnAnswer > 70 || _results.metadataFeaturesDetected)
+		if (_results.cnnAnswer > 0.7M || _results.metadataFeaturesDetected)
 		{
 			FinalAnalysisResult = "Вывод: изображение было подделано.";
 		}

@@ -6,5 +6,5 @@ public interface IAnalyzerService
 
 	string ElaMethod(string path);
 
-	string NeuralNetworkMethod(string path);
+	float NeuralNetworkMethod(string path);
 }
