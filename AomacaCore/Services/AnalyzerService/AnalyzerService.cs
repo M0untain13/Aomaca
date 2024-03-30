@@ -72,7 +72,7 @@ public class AnalyzerService : IAnalyzerService
 
 	public string ElaMethod(string path)
 	{
-		RunCmd("ela.exe", $"\"{path}\" 100");
+		RunCmd("ela.exe", $"\"{path}\"");
 
 		return @$"{filesDir}\resaved_image.jpg {filesDir}\ela_image.png";
 	}
