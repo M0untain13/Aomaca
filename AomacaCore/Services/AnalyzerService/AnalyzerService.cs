@@ -16,7 +16,7 @@ public class AnalyzerService : IAnalyzerService
 		// TODO: надо переделать метод
 		var lines = RunCmd("exif.exe", $"\"{path}\"").Split('\n');
 
-		var metadataText = "";
+        var metadataText = "";
 		var analysisText = "";
 		var detected = "0";
 		var result = "";
