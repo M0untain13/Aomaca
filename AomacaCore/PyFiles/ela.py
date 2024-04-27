@@ -1,26 +1,51 @@
 import sys
-from PIL import Image, ImageChops, ImageEnhance
+from PIL import Image, ImageChops, ImageEnhance, ImageFilter
 
 
-def CreateElaImage(path: str, quality: int) -> None:
-    baseDir = "Files"
-    resavedFilePath = f"{baseDir}\\resaved_image.jpg"
-    elaFilePath = f"{baseDir}\\ela_image.png"
+def GetBaseDir() -> str:
+    return 'Files'
 
-    originalImage = Image.open(path).convert("RGB")
-    originalImage.save(resavedFilePath, "JPEG", quality=quality)
-    resavedImage = Image.open(resavedFilePath)
 
-    elaImage = ImageChops.difference(originalImage, resavedImage)
+def GetDif(path: str, resavedPath: str, quality: int, format: str) -> Image:
+    originalImage = Image.open(path).convert(format)
+    originalImage.save(resavedPath, "JPEG", quality=quality)
+    resavedImage = Image.open(resavedPath)
+    return ImageChops.difference(originalImage, resavedImage)
 
-    extrema = elaImage.getextrema()  # Коэффициенты масштабирования рассчитываются по экстремумам пикселей
-    maxDifference = max([pix[1] for pix in extrema])
+
+def GetEnhance(image: Image, format: str) -> Image:
+    if format == 'L':
+        extrema = image.getextrema()
+    elif format == 'RGB':
+        extrema = image.getextrema()[0]
+    else:
+        raise Exception(f'Invalid argument: {format}')
+    maxDifference = max(extrema)
     if maxDifference == 0:
         maxDifference = 1
     scale = 350.0 / maxDifference
-    elaImage = ImageEnhance.Brightness(elaImage).enhance(scale)  # Выравниваем яркость изображения
+    return ImageEnhance.Brightness(image).enhance(scale)
 
-    elaImage.save(elaFilePath)
+
+def GetMask(path: str, quality: int) -> Image:
+    resavedPath = f"{GetBaseDir()}\\resaved_for_mask.jpg"
+    format = 'L'
+    mask = GetDif(path, resavedPath, quality, format)
+    mask = mask.filter(ImageFilter.GaussianBlur(radius=10))
+    mask = GetEnhance(mask, format)
+    return mask
+
+
+def GetEla(path: str, quality: int) -> Image:
+    resavedPath = f"{GetBaseDir()}\\resaved_image.jpg"
+    format = 'RGB'
+    image = GetDif(path, resavedPath, quality, format)
+    image = GetEnhance(image, format)
+    image.save(f'{GetBaseDir()}\\t1.png')
+    mask = GetMask(path, quality)
+    mask.save(f'{GetBaseDir()}\\t2.png')
+    result = Image.composite(image, Image.new('RGB', image.size, 'black'), mask)
+    return result
 
 
 def Main(args: list) -> None:
@@ -31,8 +56,8 @@ def Main(args: list) -> None:
         if len(args) > 2:
             quality = int(args[2])
         else:
-            quality = 100
-        CreateElaImage(filePath, quality)
+            quality = 80
+        GetEla(filePath, quality).save(f'{GetBaseDir()}\\ela_image.png')
         print('Изображение успешно создано.')
 
 
