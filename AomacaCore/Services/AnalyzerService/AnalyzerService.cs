@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 using SixLabors.ImageSharp;
@@ -125,18 +126,19 @@ public class AnalyzerService : IAnalyzerService
 
 	private string RunCmd(string scriptPath, string args)
 	{
-		var info = new ProcessStartInfo
+        var info = new ProcessStartInfo
 		{
 			// TODO: мне кажется, надо вынести все пути в файл конфигурации
 			FileName = @$"{scriptDir}\{scriptPath}",
 			Arguments = args,
 			UseShellExecute = false,
 			CreateNoWindow = true,
-			//StandardOutputEncoding = Encoding.Default,
 			RedirectStandardOutput = true,
 			RedirectStandardError = true
 		};
+
 		using var process = Process.Start(info);
+
 		process?.WaitForExit();
 
 		// Это для дебаггинга TODO: потом убрать

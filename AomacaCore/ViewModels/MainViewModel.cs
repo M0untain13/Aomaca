@@ -91,6 +91,8 @@ public class MainViewModel : MvxViewModel
 
 	#region Статус-бар
 
+	// TODO: Мне кажется, нужно использовать StringBuilder (1 - статус часто меняется, 2 - в некоторых случаях статус меняется в цикле)
+
 	private string _statusText = string.Empty;
 	public string StatusText
 	{
@@ -331,16 +333,16 @@ public class MainViewModel : MvxViewModel
 
 	private void CnnAnalysis()
 	{
-        var result = _analyzerService.NeuralNetworkMethod(PathToEla);
+        //var result = _analyzerService.NeuralNetworkMethod(PathToEla);
 
-        ElaAnalysisResult = $"Нейросеть считает, что изображение подделано с вероятностью {(int)(Math.Round(result, 2)*100)}%.";
+		ElaAnalysisResult = "Ошибка: нейросеть не настроена."; //$"Нейросеть считает, что изображение подделано с вероятностью {(int)(Math.Round(result, 2)*100)}%.";
 
-        _results.cnnAnswer = (decimal)result;
+		_results.cnnAnswer = 0.00M; //(decimal)result;
     }
 
 	private void Conclusion()
 	{
-		if (_results.cnnAnswer > 0.7M || _results.metadataFeaturesDetected)
+		if (_results.cnnAnswer > 0.70M || _results.metadataFeaturesDetected)
 		{
 			FinalAnalysisResult = "Вывод: изображение было подделано.";
 		}
